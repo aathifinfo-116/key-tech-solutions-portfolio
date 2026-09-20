@@ -1,0 +1,32 @@
+{
+  "name": "@kts/validation",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@kts/config": "workspace:*",
+    "@kts/shared-types": "workspace:*",
+    "sanitize-html": "2.13.0",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@types/sanitize-html": "2.13.0",
+    "@typescript-eslint/eslint-plugin": "7.16.1",
+    "@typescript-eslint/parser": "7.16.1",
+    "eslint": "8.57.0",
+    "typescript": "5.5.4",
+    "vitest": "2.1.8"
+  }
+}

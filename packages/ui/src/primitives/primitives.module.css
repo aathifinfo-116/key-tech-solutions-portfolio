@@ -1,0 +1,623 @@
+/* Shared primitives: container, section shell, buttons, cards, headings. */
+
+/* --------------------------------------------------------------------------
+ * Container
+ * ------------------------------------------------------------------------ */
+
+.container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--kt-gutter-mobile);
+  max-width: calc(var(--kt-container-max) + (var(--kt-gutter-desktop) * 2));
+}
+
+.container.wide {
+  max-width: calc(var(--kt-container-wide) + (var(--kt-gutter-desktop) * 2));
+}
+
+.container.narrow {
+  max-width: calc(var(--kt-container-narrow) + (var(--kt-gutter-desktop) * 2));
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-inline: var(--kt-gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-inline: var(--kt-gutter-desktop);
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Section
+ * ------------------------------------------------------------------------ */
+
+.section {
+  position: relative;
+  padding-block: var(--kt-space-9);
+  background: var(--section-bg, var(--kt-surface));
+  color: var(--section-fg, var(--kt-text-primary));
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding-block: var(--kt-space-10);
+  }
+}
+
+@media (min-width: 1280px) {
+  .section {
+    padding-block: var(--kt-space-11);
+  }
+}
+
+.section.compact {
+  padding-block: var(--kt-space-7);
+}
+
+/* A hairline between two sections that share a background colour. */
+.section.bordered {
+  border-top: 1px solid var(--section-border, var(--kt-border-default));
+}
+
+/* --------------------------------------------------------------------------
+ * Section header
+ * ------------------------------------------------------------------------ */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kt-space-3);
+  max-width: var(--kt-measure-default);
+  margin-bottom: var(--kt-space-7);
+}
+
+.header.centered {
+  margin-inline: auto;
+  text-align: center;
+  align-items: center;
+}
+
+.header.split {
+  max-width: none;
+}
+
+@media (min-width: 1024px) {
+  .header.split {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--kt-space-7);
+  }
+
+  .header.split .headerText {
+    max-width: var(--kt-measure-default);
+  }
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kt-space-3);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kt-space-2);
+  font-size: var(--kt-text-meta);
+  font-weight: var(--kt-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--section-muted, var(--kt-text-secondary));
+}
+
+.eyebrowMark {
+  width: 24px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--kt-gradient-brand);
+}
+
+.sectionHeading {
+  font-size: var(--kt-text-section-heading);
+  margin: 0;
+}
+
+.pageHeading {
+  font-size: var(--kt-text-page-heading);
+  margin: 0;
+}
+
+.lead {
+  font-size: var(--kt-text-lead);
+  line-height: var(--kt-leading-snug);
+  color: var(--section-muted, var(--kt-text-secondary));
+  max-width: var(--kt-measure-default);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+ * Buttons
+ * ------------------------------------------------------------------------ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kt-space-2);
+  min-height: var(--kt-touch-target-large);
+  padding: 0 var(--kt-space-5);
+  border: 1px solid transparent;
+  border-radius: var(--kt-radius-sm);
+  font-size: 1rem;
+  font-weight: var(--kt-weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--kt-duration-fast) var(--kt-ease-standard),
+    box-shadow var(--kt-duration-fast) var(--kt-ease-standard),
+    background-color var(--kt-duration-fast) var(--kt-ease-standard),
+    border-color var(--kt-duration-fast) var(--kt-ease-standard),
+    color var(--kt-duration-fast) var(--kt-ease-standard);
+}
+
+.button:disabled,
+.button[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.primary {
+  background: var(--kt-gradient-brand);
+  color: var(--kt-color-white);
+  box-shadow: var(--kt-shadow-sm);
+}
+
+.primary:not(:disabled):hover {
+  box-shadow: var(--kt-shadow-brand);
+  color: var(--kt-color-white);
+}
+
+.secondary {
+  background: transparent;
+  border-color: var(--section-border, var(--kt-border-strong));
+  color: var(--section-fg, var(--kt-text-primary));
+}
+
+.secondary:not(:disabled):hover {
+  border-color: var(--kt-color-purple);
+  color: var(--kt-color-purple);
+  background: var(--kt-color-soft-purple);
+}
+
+/* On dark and gradient sections the secondary button inverts. */
+.onDark.secondary {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: var(--kt-color-white);
+}
+
+.onDark.secondary:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--kt-color-white);
+  color: var(--kt-color-white);
+}
+
+.onDark.primary {
+  background: var(--kt-color-white);
+  color: var(--kt-color-purple);
+}
+
+.onDark.primary:not(:disabled):hover {
+  color: var(--kt-color-purple);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--section-fg, var(--kt-text-primary));
+  padding-inline: var(--kt-space-3);
+}
+
+.ghost:not(:disabled):hover {
+  background: var(--kt-color-soft-purple);
+  color: var(--kt-color-purple);
+}
+
+.small {
+  min-height: 38px;
+  padding-inline: var(--kt-space-4);
+  font-size: var(--kt-text-small);
+}
+
+.block {
+  width: 100%;
+}
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kt-space-3);
+}
+
+/* An inline text link with a moving arrow, used on cards. */
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kt-space-2);
+  font-weight: var(--kt-weight-semibold);
+  font-size: var(--kt-text-small);
+  text-decoration: none;
+  color: var(--kt-color-purple);
+}
+
+.textLinkArrow {
+  transition: transform var(--kt-duration-fast) var(--kt-ease-standard);
+}
+
+.textLink:hover .textLinkArrow {
+  transform: translateX(3px);
+}
+
+/* --------------------------------------------------------------------------
+ * Cards
+ * ------------------------------------------------------------------------ */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kt-space-3);
+  padding: var(--kt-space-5);
+  background: var(--kt-surface);
+  border: 1px solid var(--kt-border-default);
+  border-radius: var(--kt-radius-lg);
+  color: var(--kt-text-primary);
+  text-decoration: none;
+  height: 100%;
+  transition:
+    transform var(--kt-duration-base) var(--kt-ease-standard),
+    box-shadow var(--kt-duration-base) var(--kt-ease-standard),
+    border-color var(--kt-duration-base) var(--kt-ease-standard);
+}
+
+.card.interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--kt-shadow-md);
+  border-color: #c9b7e6;
+}
+
+.card.onDarkSurface {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--kt-color-white);
+}
+
+.card.onDarkSurface:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cardHeading {
+  font-size: var(--kt-text-card-heading);
+  margin: 0;
+}
+
+.cardBody {
+  color: var(--section-muted, var(--kt-text-secondary));
+  margin: 0;
+}
+
+.card.onDarkSurface .cardBody {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* Pushes the call to action to the bottom of a card in a grid. */
+.cardFooter {
+  margin-top: auto;
+  padding-top: var(--kt-space-3);
+}
+
+/* --------------------------------------------------------------------------
+ * Badges and pills
+ * ------------------------------------------------------------------------ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--kt-radius-pill);
+  font-size: var(--kt-text-meta);
+  font-weight: var(--kt-weight-semibold);
+  letter-spacing: 0.02em;
+  /*
+    A badge sizes to its text and so stays on one line wherever there is
+    room. It is deliberately not `white-space: nowrap`: a long label such as
+    "Technical architecture document" would otherwise set a floor on the
+    width of everything around it and scroll a 320px screen sideways.
+  */
+  max-width: 100%;
+  text-align: center;
+}
+
+.badgeNeutral {
+  background: var(--kt-surface-muted);
+  color: var(--kt-text-secondary);
+  border: 1px solid var(--kt-border-default);
+}
+
+.badgeBrand {
+  background: var(--kt-color-soft-purple);
+  color: var(--kt-color-purple);
+  border: 1px solid #e1d6f2;
+}
+
+.badgeAccent {
+  background: var(--kt-color-soft-teal);
+  color: #1f7a7a;
+  border: 1px solid #cbe9e7;
+}
+
+.badgeSuccess {
+  background: #e7f4ee;
+  color: var(--kt-color-success);
+  border: 1px solid #c6e5d4;
+}
+
+.badgeWarning {
+  background: #fbf1e2;
+  color: var(--kt-color-warning);
+  border: 1px solid #f0dcbb;
+}
+
+/* A status dot, so state is never communicated by colour alone. */
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+/* --------------------------------------------------------------------------
+ * Grids
+ * ------------------------------------------------------------------------ */
+
+.grid {
+  display: grid;
+  gap: var(--kt-space-5);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid.cols2,
+  .grid.cols3,
+  .grid.cols4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid.cols3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .grid.cols4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Prose (editor-authored rich text)
+ * ------------------------------------------------------------------------ */
+
+.prose {
+  max-width: var(--kt-measure-default);
+  color: var(--section-fg, var(--kt-text-primary));
+  font-size: var(--kt-text-body);
+  line-height: var(--kt-leading-relaxed);
+}
+
+.prose.wide {
+  max-width: var(--kt-measure-wide);
+}
+
+.prose > * + * {
+  margin-top: var(--kt-space-4);
+}
+
+.prose h2 {
+  font-size: var(--kt-text-card-heading);
+  margin-top: var(--kt-space-7);
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  margin-top: var(--kt-space-6);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4em;
+}
+
+.prose li + li {
+  margin-top: var(--kt-space-2);
+}
+
+.prose a {
+  color: var(--kt-color-purple);
+  text-decoration: underline;
+}
+
+.prose blockquote {
+  padding: var(--kt-space-4) var(--kt-space-5);
+  border-left: 3px solid var(--kt-color-teal);
+  background: var(--kt-color-soft-teal);
+  border-radius: 0 var(--kt-radius-md) var(--kt-radius-md) 0;
+  font-size: var(--kt-text-lead);
+}
+
+.prose pre {
+  padding: var(--kt-space-4);
+  overflow-x: auto;
+  background: var(--kt-color-ink);
+  color: #e8eaf2;
+  border-radius: var(--kt-radius-md);
+  font-family: var(--kt-font-mono);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.prose :not(pre) > code {
+  padding: 0.15em 0.4em;
+  background: var(--kt-surface-muted);
+  border: 1px solid var(--kt-border-default);
+  border-radius: 5px;
+  font-family: var(--kt-font-mono);
+  font-size: 0.9em;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--kt-text-small);
+}
+
+.prose th,
+.prose td {
+  padding: var(--kt-space-3);
+  border: 1px solid var(--kt-border-default);
+  text-align: left;
+}
+
+.prose th {
+  background: var(--kt-surface-muted);
+  font-weight: var(--kt-weight-semibold);
+}
+
+.prose img {
+  border-radius: var(--kt-radius-md);
+}
+
+/* --------------------------------------------------------------------------
+ * Lists with a brand tick
+ * ------------------------------------------------------------------------ */
+
+.checkList {
+  display: grid;
+  gap: var(--kt-space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.checkItem {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: var(--kt-space-3);
+  align-items: start;
+  color: var(--section-fg, var(--kt-text-primary));
+}
+
+.checkIcon {
+  margin-top: 2px;
+  color: var(--kt-color-teal);
+  flex: none;
+}
+
+/* --------------------------------------------------------------------------
+ * Skip link
+ * ------------------------------------------------------------------------ */
+
+.skipLink {
+  position: absolute;
+  top: -100px;
+  left: var(--kt-space-4);
+  z-index: var(--kt-z-skip-link);
+  padding: var(--kt-space-3) var(--kt-space-4);
+  background: var(--kt-color-ink);
+  color: var(--kt-color-white);
+  border-radius: var(--kt-radius-sm);
+  text-decoration: none;
+  font-weight: var(--kt-weight-semibold);
+  transition: top var(--kt-duration-fast) var(--kt-ease-standard);
+}
+
+.skipLink:focus {
+  top: var(--kt-space-3);
+  color: var(--kt-color-white);
+}
+
+/* --------------------------------------------------------------------------
+ * Media
+ * ------------------------------------------------------------------------ */
+
+.mediaFrame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--kt-radius-lg);
+  background: var(--kt-surface-muted);
+}
+
+/* A 1px gradient edge, used sparingly on hero and feature imagery. */
+.mediaFrame.branded {
+  padding: 2px;
+  background: var(--kt-gradient-brand);
+}
+
+.mediaFrame.branded > * {
+  border-radius: calc(var(--kt-radius-lg) - 2px);
+  overflow: hidden;
+  background: var(--kt-surface);
+}
+
+.mediaPlaceholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: var(--placeholder-ratio, 4 / 3);
+  background: radial-gradient(120% 100% at 0% 0%, rgba(100, 54, 163, 0.1), transparent 60%),
+    radial-gradient(120% 100% at 100% 100%, rgba(44, 163, 163, 0.12), transparent 60%),
+    var(--kt-surface-muted);
+  color: var(--kt-text-secondary);
+}
+
+.placeholderMark {
+  opacity: 0.5;
+}
+
+/* --------------------------------------------------------------------------
+ * Empty state
+ * ------------------------------------------------------------------------ */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--kt-space-3);
+  padding: var(--kt-space-9) var(--kt-space-5);
+  text-align: center;
+  border: 1px dashed var(--kt-border-default);
+  border-radius: var(--kt-radius-lg);
+  background: var(--kt-surface-muted);
+  color: var(--kt-text-secondary);
+}
+
+.emptyTitle {
+  font-size: var(--kt-text-card-heading);
+  color: var(--kt-text-primary);
+}

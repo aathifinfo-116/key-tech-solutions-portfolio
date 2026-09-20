@@ -1,0 +1,191 @@
+/* Public form styling. */
+
+.form {
+  display: grid;
+  gap: var(--kt-space-5);
+  max-width: 720px;
+}
+
+.row {
+  display: grid;
+  gap: var(--kt-space-4);
+}
+
+@media (min-width: 640px) {
+  .row.two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: var(--kt-text-small);
+  font-weight: var(--kt-weight-semibold);
+}
+
+.optional {
+  font-weight: var(--kt-weight-regular);
+  color: var(--kt-text-secondary);
+}
+
+.hint {
+  font-size: var(--kt-text-meta);
+  color: var(--kt-text-secondary);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  min-height: var(--kt-control-height);
+  padding: 0 var(--kt-control-padding-x);
+  background: var(--kt-surface);
+  border: var(--kt-control-border-width) solid var(--kt-border-strong);
+  border-radius: var(--kt-control-radius);
+  font-size: var(--kt-control-font-size);
+  color: var(--kt-text-primary);
+  transition:
+    border-color var(--kt-duration-fast) var(--kt-ease-standard),
+    box-shadow var(--kt-duration-fast) var(--kt-ease-standard);
+}
+
+.textarea {
+  min-height: 160px;
+  padding: var(--kt-space-3) var(--kt-control-padding-x);
+  resize: vertical;
+  line-height: var(--kt-leading-body);
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: var(--kt-color-purple);
+  box-shadow: var(--kt-shadow-focus);
+  outline: none;
+}
+
+/* Invalid fields get a colour, an icon-free message and aria-invalid, so the
+   state is never communicated by colour alone. */
+.input[aria-invalid='true'],
+.textarea[aria-invalid='true'],
+.select[aria-invalid='true'] {
+  border-color: var(--kt-color-error);
+}
+
+.error {
+  font-size: var(--kt-text-meta);
+  font-weight: var(--kt-weight-medium);
+  color: var(--kt-color-error);
+}
+
+.checkboxRow {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: var(--kt-space-3);
+  align-items: start;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--kt-color-purple);
+}
+
+.checkboxLabel {
+  font-size: var(--kt-text-small);
+  line-height: 1.5;
+}
+
+.featureList {
+  display: grid;
+  gap: var(--kt-space-2);
+}
+
+@media (min-width: 640px) {
+  .featureList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Error summary: focused on submit so screen readers announce the problems. */
+.summary {
+  padding: var(--kt-space-4);
+  border: 1px solid #e6b9b9;
+  border-left: 4px solid var(--kt-color-error);
+  border-radius: var(--kt-radius-sm);
+  background: #fcf0f0;
+}
+
+.summaryTitle {
+  font-weight: var(--kt-weight-semibold);
+  color: var(--kt-color-error);
+  margin-bottom: var(--kt-space-2);
+}
+
+.summaryList {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: var(--kt-text-small);
+}
+
+.summaryList a {
+  color: var(--kt-color-error);
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kt-space-3);
+  padding: var(--kt-space-6);
+  border: 1px solid #c6e5d4;
+  border-left: 4px solid var(--kt-color-success);
+  border-radius: var(--kt-radius-md);
+  background: #f1f9f5;
+}
+
+.successTitle {
+  font-size: var(--kt-text-card-heading);
+  font-weight: var(--kt-weight-semibold);
+  color: var(--kt-color-success);
+}
+
+.reference {
+  font-family: var(--kt-font-mono);
+  font-weight: var(--kt-weight-semibold);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kt-space-4);
+}
+
+/* Honeypot: off screen rather than display:none, so naive bots still fill it. */
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.fileInput {
+  font-size: var(--kt-text-small);
+}
+
+.fileInput::file-selector-button {
+  margin-right: var(--kt-space-3);
+  padding: 8px 14px;
+  border: 1px solid var(--kt-border-strong);
+  border-radius: var(--kt-radius-xs);
+  background: var(--kt-surface-muted);
+  font-weight: var(--kt-weight-semibold);
+  cursor: pointer;
+}

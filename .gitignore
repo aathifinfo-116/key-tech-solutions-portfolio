@@ -1,0 +1,49 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# environment
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# build output
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+coverage/
+.turbo/
+
+# prisma generated client
+node_modules/.prisma/
+packages/*/generated/
+apps/*/generated/
+
+# uploads (runtime data, never committed)
+uploads/public/**
+uploads/private/**
+uploads/temp/**
+!uploads/**/.gitkeep
+
+# test artifacts
+playwright-report/
+test-results/
+.playwright/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+tsconfig.build.tsbuildinfo
+*.tsbuildinfo

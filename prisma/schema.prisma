@@ -1,0 +1,1888 @@
+// =============================================================================
+// Key Tech Solutions - Portfolio Management Platform
+// Prisma schema. Every credential is supplied through environment variables.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_DIRECT_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum PublicationStatus {
+  DRAFT
+  REVIEW
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AdminUserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  DISABLED
+}
+
+enum ContentEntityType {
+  PAGE
+  PAGE_SECTION
+  SERVICE
+  SERVICE_CATEGORY
+  SOLUTION
+  INDUSTRY
+  PRODUCT
+  PORTFOLIO_PROJECT
+  CASE_STUDY
+  BLOG_POST
+  BLOG_CATEGORY
+  CAREER
+  TEAM_MEMBER
+  TESTIMONIAL
+  CLIENT
+  PARTNER
+  PROCESS_PHASE
+  TECHNOLOGY
+  COMPANY_VALUE
+  COMPANY_MILESTONE
+  STATISTIC
+  NAVIGATION_MENU
+  FOOTER_GROUP
+  ANNOUNCEMENT
+  SITE_SETTING
+  BRAND_SETTING
+  REDIRECT_RULE
+  MEDIA_ASSET
+  DOCUMENT_ASSET
+  LEAD
+  JOB_APPLICATION
+  NEWSLETTER_SUBSCRIBER
+  ADMIN_USER
+  ROLE
+}
+
+enum SectionTheme {
+  LIGHT
+  WHITE
+  SOFT_PURPLE
+  SOFT_TEAL
+  DARK
+  BRAND_GRADIENT
+}
+
+enum SectionType {
+  HERO
+  RICH_TEXT
+  SPLIT_CONTENT
+  IMAGE_GALLERY
+  STATISTICS
+  SERVICE_GRID
+  PRODUCT_GRID
+  SOLUTION_GRID
+  PORTFOLIO_GRID
+  CASE_STUDY
+  PROCESS_STEPS
+  TIMELINE
+  VALUES
+  TEAM
+  TESTIMONIALS
+  LOGO_CLOUD
+  FAQ
+  DOWNLOAD
+  CTA
+  CONTACT_BLOCK
+  TECHNOLOGY_GRID
+  VIDEO
+  QUOTE
+  CAPABILITY_STRIP
+  INDUSTRY_GRID
+  BLOG_PREVIEW
+}
+
+enum ContentBlockType {
+  PARAGRAPH
+  HEADING
+  IMAGE
+  GALLERY
+  QUOTE
+  CALLOUT
+  CODE
+  LIST
+  TABLE
+  VIDEO_EMBED
+  DOWNLOAD
+  CTA
+  RELATED_CONTENT
+}
+
+enum ProductStatus {
+  CONCEPT
+  PLANNED
+  IN_DEVELOPMENT
+  COMING_SOON
+  BETA
+  LIVE
+  MAINTENANCE
+  RETIRED
+}
+
+enum ProjectStatus {
+  PLANNED
+  IN_PROGRESS
+  ONGOING
+  COMPLETED
+  MAINTENANCE
+  PRIVATE
+}
+
+enum BlogPostType {
+  ARTICLE
+  TECHNICAL_GUIDE
+  PRODUCT_UPDATE
+  RELEASE_NOTE
+  CASE_STUDY
+  COMPANY_NEWS
+  INDUSTRY_INSIGHT
+}
+
+enum CareerStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum WorkplaceType {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  TEMPORARY
+}
+
+enum ApplicationStatus {
+  RECEIVED
+  SCREENING
+  SHORTLISTED
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
+  WITHDRAWN
+  ARCHIVED
+}
+
+enum LeadType {
+  CONTACT
+  QUOTE
+  NEWSLETTER
+  CAREER
+}
+
+enum LeadStatus {
+  NEW
+  REVIEWING
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  WON
+  LOST
+  SPAM
+  ARCHIVED
+}
+
+enum MediaVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum MediaKind {
+  IMAGE
+  LOGO
+  ICON
+  SCREENSHOT
+  OPEN_GRAPH
+}
+
+enum DocumentKind {
+  LEAD_ATTACHMENT
+  CV
+  BROCHURE
+  CASE_STUDY_DOWNLOAD
+  GENERAL
+}
+
+enum RedirectStatus {
+  PERMANENT_301
+  FOUND_302
+  TEMPORARY_307
+  PERMANENT_308
+  GONE_410
+}
+
+enum SitemapFrequency {
+  ALWAYS
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  NEVER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  ARCHIVE
+  RESTORE
+  PUBLISH
+  UNPUBLISH
+  SCHEDULE
+  LOGIN
+  LOGIN_FAILED
+  LOGOUT
+  PASSWORD_RESET_REQUEST
+  PASSWORD_RESET_COMPLETE
+  PASSWORD_CHANGE
+  PERMISSION_CHANGE
+  UPLOAD
+  DOWNLOAD
+  EXPORT
+  STATUS_CHANGE
+}
+
+enum NavigationLocation {
+  PRIMARY
+  FOOTER
+  UTILITY
+  MOBILE
+  LEGAL
+}
+
+enum AnnouncementTone {
+  INFO
+  BRAND
+  SUCCESS
+  WARNING
+}
+
+enum RevisionAction {
+  SAVED
+  SUBMITTED_FOR_REVIEW
+  PUBLISHED
+  UNPUBLISHED
+  SCHEDULED
+  ARCHIVED
+  RESTORED
+  DUPLICATED
+}
+
+// -----------------------------------------------------------------------------
+// Identity, access control and auditing
+// -----------------------------------------------------------------------------
+
+model AdminUser {
+  id                 String          @id @default(uuid()) @db.Uuid
+  email              String          @unique
+  name               String
+  jobTitle           String?
+  passwordHash       String
+  status             AdminUserStatus @default(INVITED)
+  mustChangePassword Boolean         @default(false)
+  failedLoginCount   Int             @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
+  lastLoginIp        String?
+  avatarUrl          String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  archivedAt         DateTime?
+
+  roles             UserRole[]
+  sessions          AdminSession[]
+  passwordResets    PasswordReset[]
+  auditLogs         AuditLog[]
+  revisions         PageRevision[]
+  uploadedMedia     MediaAsset[]    @relation("MediaUploader")
+  uploadedDocuments DocumentAsset[] @relation("DocumentUploader")
+  assignedLeads     Lead[]          @relation("LeadAssignee")
+  leadNotes         LeadNote[]
+  createdRedirects  RedirectRule[]  @relation("RedirectAuthor")
+  authorProfile     Author?
+
+  @@index([status])
+  @@index([archivedAt])
+  @@map("admin_users")
+}
+
+model AdminSession {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @db.Uuid
+  tokenHash         String    @unique
+  userAgent         String?
+  ipAddress         String?
+  createdAt         DateTime  @default(now())
+  lastSeenAt        DateTime  @default(now())
+  idleExpiresAt     DateTime
+  absoluteExpiresAt DateTime
+  revokedAt         DateTime?
+  revokedReason     String?
+
+  user AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([absoluteExpiresAt])
+  @@map("admin_sessions")
+}
+
+model PasswordReset {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  requestIp String?
+  createdAt DateTime  @default(now())
+
+  user AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_resets")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  name        String
+  description String?
+  isSystem    Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  family      String
+  action      String
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@index([family])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String   @db.Uuid
+  permissionId String   @db.Uuid
+  createdAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  userId    String   @db.Uuid
+  roleId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model AuditLog {
+  id          String            @id @default(uuid()) @db.Uuid
+  actorId     String?           @db.Uuid
+  actorEmail  String?
+  action      AuditAction
+  entityType  ContentEntityType
+  entityId    String?
+  entityLabel String?
+  summary     String?
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  requestId   String?
+  createdAt   DateTime          @default(now())
+
+  actor AdminUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+model IdempotencyRecord {
+  id           String   @id @default(uuid()) @db.Uuid
+  key          String   @unique
+  scope        String
+  requestHash  String
+  responseBody Json?
+  statusCode   Int?
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  @@index([expiresAt])
+  @@map("idempotency_records")
+}
+
+// -----------------------------------------------------------------------------
+// Media, documents and SEO primitives
+// -----------------------------------------------------------------------------
+
+model MediaAsset {
+  id           String          @id @default(uuid()) @db.Uuid
+  storageKey   String          @unique
+  originalName String
+  generatedName String
+  mimeType     String
+  extension    String
+  kind         MediaKind       @default(IMAGE)
+  visibility   MediaVisibility @default(PUBLIC)
+  folder       String          @default("content")
+  sizeBytes    Int
+  width        Int?
+  height       Int?
+  aspectRatio  Float?
+  blurDataUrl  String?
+  altText      String?
+  caption      String?
+  focalX       Float           @default(0.5)
+  focalY       Float           @default(0.5)
+  checksum     String?
+  variants     Json?
+  uploadedById String?         @db.Uuid
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  archivedAt   DateTime?
+
+  uploadedBy AdminUser? @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  usages             MediaUsage[]        @relation("MediaUsageAsset")
+  seoOgImages        SeoMetadata[]       @relation("SeoOgImage")
+  pageCovers         Page[]              @relation("PageCover")
+  sectionMedia       PageSection[]       @relation("SectionMedia")
+  blockMedia         ContentBlock[]      @relation("ContentBlockMedia")
+  serviceCovers      Service[]           @relation("ServiceCover")
+  solutionCovers     Solution[]          @relation("SolutionCover")
+  industryCovers     Industry[]          @relation("IndustryCover")
+  productLogos       Product[]           @relation("ProductLogo")
+  productCovers      Product[]           @relation("ProductCover")
+  productScreenshots ProductScreenshot[] @relation("ProductScreenshotMedia")
+  portfolioCovers    PortfolioProject[]  @relation("PortfolioCover")
+  caseStudyCovers    CaseStudy[]         @relation("CaseStudyCover")
+  blogCovers         BlogPost[]          @relation("BlogCover")
+  authorAvatars      Author[]            @relation("AuthorAvatar")
+  teamPhotos         TeamMember[]        @relation("TeamPhoto")
+  testimonialPhotos  Testimonial[]       @relation("TestimonialPhoto")
+  clientLogos        Client[]            @relation("ClientLogo")
+  partnerLogos       Partner[]           @relation("PartnerLogo")
+  technologyLogos    Technology[]        @relation("TechnologyLogo")
+  processImages      ProcessPhase[]      @relation("ProcessImage")
+  milestoneImages    CompanyMilestone[]  @relation("MilestoneImage")
+  brandLogoLight     BrandSetting[]      @relation("BrandLogoLight")
+  brandLogoDark      BrandSetting[]      @relation("BrandLogoDark")
+  brandLogoMark      BrandSetting[]      @relation("BrandLogoMark")
+  brandFavicon       BrandSetting[]      @relation("BrandFavicon")
+  brandOgDefault     BrandSetting[]      @relation("BrandOgDefault")
+
+  @@index([visibility, archivedAt])
+  @@index([kind])
+  @@index([folder])
+  @@index([createdAt])
+  @@map("media_assets")
+}
+
+model DocumentAsset {
+  id           String          @id @default(uuid()) @db.Uuid
+  storageKey   String          @unique
+  originalName String
+  generatedName String
+  mimeType     String
+  extension    String
+  kind         DocumentKind    @default(GENERAL)
+  visibility   MediaVisibility @default(PRIVATE)
+  folder       String          @default("documents")
+  sizeBytes    Int
+  title        String?
+  description  String?
+  checksum     String?
+  uploadedById String?         @db.Uuid
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  archivedAt   DateTime?
+
+  uploadedBy AdminUser? @relation("DocumentUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  leads        Lead[]           @relation("LeadAttachment")
+  applications JobApplication[] @relation("ApplicationCv")
+  caseStudies  CaseStudyDownload[]
+  solutionDocs SolutionDocument[]
+
+  @@index([visibility, archivedAt])
+  @@index([kind])
+  @@map("document_assets")
+}
+
+model MediaUsage {
+  id         String            @id @default(uuid()) @db.Uuid
+  mediaId    String            @db.Uuid
+  entityType ContentEntityType
+  entityId   String            @db.Uuid
+  role       String            @default("gallery")
+  sortOrder  Int               @default(0)
+  altOverride String?
+  createdAt  DateTime          @default(now())
+
+  media MediaAsset @relation("MediaUsageAsset", fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, entityType, entityId, role])
+  @@index([entityType, entityId, role, sortOrder])
+  @@map("media_usages")
+}
+
+model SeoMetadata {
+  id               String            @id @default(uuid()) @db.Uuid
+  title            String?
+  description      String?
+  canonicalUrl     String?
+  ogTitle          String?
+  ogDescription    String?
+  ogImageId        String?           @db.Uuid
+  twitterCard      String            @default("summary_large_image")
+  keywords         String[]          @default([])
+  robotsIndex      Boolean           @default(true)
+  robotsFollow     Boolean           @default(true)
+  includeInSitemap Boolean           @default(true)
+  sitemapPriority  Float             @default(0.5)
+  sitemapFrequency SitemapFrequency  @default(WEEKLY)
+  structuredDataOverride Json?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  ogImage MediaAsset? @relation("SeoOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+
+  page       Page?
+  service    Service?
+  solution   Solution?
+  industry   Industry?
+  product    Product?
+  portfolio  PortfolioProject?
+  caseStudy  CaseStudy?
+  blogPost   BlogPost?
+  blogCategory BlogCategory?
+  career     Career?
+
+  @@map("seo_metadata")
+}
+
+model RedirectRule {
+  id          String         @id @default(uuid()) @db.Uuid
+  source      String         @unique
+  destination String
+  status      RedirectStatus @default(PERMANENT_301)
+  reason      String?
+  isActive    Boolean        @default(true)
+  hitCount    Int            @default(0)
+  lastHitAt   DateTime?
+  createdById String?        @db.Uuid
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  createdBy AdminUser? @relation("RedirectAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([isActive])
+  @@map("redirect_rules")
+}
+
+model PageRevision {
+  id             String            @id @default(uuid()) @db.Uuid
+  entityType     ContentEntityType
+  entityId       String            @db.Uuid
+  version        Int
+  editorId       String?           @db.Uuid
+  changeSummary  String?
+  action         RevisionAction    @default(SAVED)
+  statusAfter    PublicationStatus
+  snapshot       Json
+  createdAt      DateTime          @default(now())
+
+  editor AdminUser? @relation(fields: [editorId], references: [id], onDelete: SetNull)
+
+  @@unique([entityType, entityId, version])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("page_revisions")
+}
+
+// -----------------------------------------------------------------------------
+// Global site configuration
+// -----------------------------------------------------------------------------
+
+model SiteSetting {
+  id             String   @id @default(uuid()) @db.Uuid
+  key            String   @unique
+  value          Json
+  group          String   @default("general")
+  label          String
+  description    String?
+  isPublic       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([group])
+  @@map("site_settings")
+}
+
+model BrandSetting {
+  id             String   @id @default(uuid()) @db.Uuid
+  singleton      Boolean  @default(true) @unique
+  companyName    String   @default("Key Tech Solutions")
+  shortName      String   @default("Key Tech")
+  legalName      String?
+  tagline        String?
+  description    String?
+  primaryColor   String   @default("#6436A3")
+  secondaryColor String   @default("#416F9E")
+  accentColor    String   @default("#2CA3A3")
+  highlightColor String   @default("#5BC3C6")
+  inkColor       String   @default("#111426")
+  gradientCss    String   @default("linear-gradient(135deg, #6436A3 0%, #416F9E 50%, #2CA3A3 100%)")
+  contactEmail   String?
+  contactPhone   String?
+  supportEmail   String?
+  logoLightId    String?  @db.Uuid
+  logoDarkId     String?  @db.Uuid
+  logoMarkId     String?  @db.Uuid
+  faviconId      String?  @db.Uuid
+  ogDefaultId    String?  @db.Uuid
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  logoLight MediaAsset? @relation("BrandLogoLight", fields: [logoLightId], references: [id], onDelete: SetNull)
+  logoDark  MediaAsset? @relation("BrandLogoDark", fields: [logoDarkId], references: [id], onDelete: SetNull)
+  logoMark  MediaAsset? @relation("BrandLogoMark", fields: [logoMarkId], references: [id], onDelete: SetNull)
+  favicon   MediaAsset? @relation("BrandFavicon", fields: [faviconId], references: [id], onDelete: SetNull)
+  ogDefault MediaAsset? @relation("BrandOgDefault", fields: [ogDefaultId], references: [id], onDelete: SetNull)
+
+  @@map("brand_settings")
+}
+
+model SocialLink {
+  id        String   @id @default(uuid()) @db.Uuid
+  platform  String   @unique
+  label     String
+  url       String
+  iconName  String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("social_links")
+}
+
+model NavigationMenu {
+  id        String             @id @default(uuid()) @db.Uuid
+  key       String             @unique
+  name      String
+  location  NavigationLocation @default(PRIMARY)
+  isActive  Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  items NavigationItem[]
+
+  @@map("navigation_menus")
+}
+
+model NavigationItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  menuId      String   @db.Uuid
+  parentId    String?  @db.Uuid
+  label       String
+  href        String
+  description String?
+  iconName    String?
+  isExternal  Boolean  @default(false)
+  openInNewTab Boolean @default(false)
+  highlight   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  menu     NavigationMenu   @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parent   NavigationItem?  @relation("NavigationItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children NavigationItem[] @relation("NavigationItemChildren")
+
+  @@index([menuId, sortOrder])
+  @@index([parentId])
+  @@map("navigation_items")
+}
+
+model FooterGroup {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  title     String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  links FooterLink[]
+
+  @@map("footer_groups")
+}
+
+model FooterLink {
+  id         String   @id @default(uuid()) @db.Uuid
+  groupId    String   @db.Uuid
+  label      String
+  href       String
+  isExternal Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  group FooterGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, sortOrder])
+  @@map("footer_links")
+}
+
+model Announcement {
+  id        String           @id @default(uuid()) @db.Uuid
+  message   String
+  linkLabel String?
+  linkHref  String?
+  tone      AnnouncementTone @default(BRAND)
+  isActive  Boolean          @default(false)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  sortOrder Int              @default(0)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([isActive, startsAt, endsAt])
+  @@map("announcements")
+}
+
+// -----------------------------------------------------------------------------
+// Pages and the section based page builder
+// -----------------------------------------------------------------------------
+
+model Page {
+  id            String            @id @default(uuid()) @db.Uuid
+  slug          String            @unique
+  path          String            @unique
+  title         String
+  eyebrow       String?
+  headline      String?
+  subheadline   String?
+  summary       String?
+  isSystem      Boolean           @default(false)
+  showInSitemap Boolean           @default(true)
+  status        PublicationStatus @default(DRAFT)
+  publishedAt   DateTime?
+  scheduledAt   DateTime?
+  coverImageId  String?           @db.Uuid
+  seoId         String?           @unique @db.Uuid
+  version       Int               @default(1)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  archivedAt    DateTime?
+
+  coverImage MediaAsset?  @relation("PageCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  seo        SeoMetadata? @relation(fields: [seoId], references: [id], onDelete: SetNull)
+  sections   PageSection[]
+
+  @@index([status, publishedAt])
+  @@index([archivedAt])
+  @@map("pages")
+}
+
+model PageSection {
+  id           String            @id @default(uuid()) @db.Uuid
+  pageId       String            @db.Uuid
+  internalName String
+  type         SectionType
+  eyebrow      String?
+  heading      String?
+  subheading   String?
+  description  String?
+  bodyHtml     String?
+  theme        SectionTheme      @default(WHITE)
+  layoutVariant String           @default("default")
+  backgroundImageUrl String?
+  mediaId      String?           @db.Uuid
+  primaryCtaLabel String?
+  primaryCtaHref  String?
+  secondaryCtaLabel String?
+  secondaryCtaHref  String?
+  settings     Json?
+  relatedIds   String[]          @default([])
+  sortOrder    Int               @default(0)
+  isVisible    Boolean           @default(true)
+  visibleFrom  DateTime?
+  visibleUntil DateTime?
+  status       PublicationStatus @default(PUBLISHED)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  page   Page           @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  media  MediaAsset?    @relation("SectionMedia", fields: [mediaId], references: [id], onDelete: SetNull)
+  blocks ContentBlock[]
+
+  @@index([pageId, sortOrder])
+  @@index([type])
+  @@map("page_sections")
+}
+
+model ContentBlock {
+  id         String           @id @default(uuid()) @db.Uuid
+  sectionId  String?          @db.Uuid
+  blogPostId String?          @db.Uuid
+  type       ContentBlockType
+  heading    String?
+  text       String?
+  html       String?
+  code       String?
+  language   String?
+  items      Json?
+  mediaId    String?          @db.Uuid
+  href       String?
+  linkLabel  String?
+  settings   Json?
+  sortOrder  Int              @default(0)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  section  PageSection? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  blogPost BlogPost?    @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  media    MediaAsset?  @relation("ContentBlockMedia", fields: [mediaId], references: [id], onDelete: SetNull)
+
+  @@index([sectionId, sortOrder])
+  @@index([blogPostId, sortOrder])
+  @@map("content_blocks")
+}
+
+// -----------------------------------------------------------------------------
+// Offerings: services, solutions, industries, products
+// -----------------------------------------------------------------------------
+
+model ServiceCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  name        String
+  description String?
+  iconName    String?
+  accentColor String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  services Service[]
+
+  @@map("service_categories")
+}
+
+model Service {
+  id              String            @id @default(uuid()) @db.Uuid
+  slug            String            @unique
+  name            String
+  categoryId      String?           @db.Uuid
+  shortDescription String
+  fullDescription String?
+  iconName        String?
+  coverImageId    String?           @db.Uuid
+  benefits        String[]          @default([])
+  capabilities    String[]          @default([])
+  deliverables    String[]          @default([])
+  processSummary  String?
+  ctaHeading      String?
+  ctaDescription  String?
+  ctaLabel        String?
+  ctaHref         String?
+  isFeatured      Boolean           @default(false)
+  sortOrder       Int               @default(0)
+  status          PublicationStatus @default(DRAFT)
+  publishedAt     DateTime?
+  scheduledAt     DateTime?
+  seoId           String?           @unique @db.Uuid
+  version         Int               @default(1)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  archivedAt      DateTime?
+
+  category   ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  coverImage MediaAsset?      @relation("ServiceCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  seo        SeoMetadata?     @relation(fields: [seoId], references: [id], onDelete: SetNull)
+
+  features ServiceFeature[]
+  faqs     ServiceFAQ[]
+
+  products     Product[]          @relation("ServiceProducts")
+  solutions    Solution[]         @relation("ServiceSolutions")
+  projects     PortfolioProject[] @relation("ServiceProjects")
+  caseStudies  CaseStudy[]        @relation("ServiceCaseStudies")
+  technologies Technology[]       @relation("ServiceTechnologies")
+  industries   Industry[]         @relation("ServiceIndustries")
+  blogPosts    BlogPost[]         @relation("BlogPostServices")
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+  @@index([isFeatured])
+  @@index([archivedAt])
+  @@map("services")
+}
+
+model ServiceFeature {
+  id          String   @id @default(uuid()) @db.Uuid
+  serviceId   String   @db.Uuid
+  title       String
+  description String?
+  iconName    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId, sortOrder])
+  @@map("service_features")
+}
+
+model ServiceFAQ {
+  id        String   @id @default(uuid()) @db.Uuid
+  serviceId String   @db.Uuid
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId, sortOrder])
+  @@map("service_faqs")
+}
+
+model Solution {
+  id                String            @id @default(uuid()) @db.Uuid
+  slug              String            @unique
+  name              String
+  summary           String
+  businessChallenge String?
+  overview          String?
+  capabilities      String[]          @default([])
+  userTypes         String[]          @default([])
+  benefits          String[]          @default([])
+  workflowSteps     Json?
+  integrations      String[]          @default([])
+  iconName          String?
+  coverImageId      String?           @db.Uuid
+  ctaHeading        String?
+  ctaLabel          String?
+  ctaHref           String?
+  isFeatured        Boolean           @default(false)
+  sortOrder         Int               @default(0)
+  status            PublicationStatus @default(DRAFT)
+  publishedAt       DateTime?
+  scheduledAt       DateTime?
+  seoId             String?           @unique @db.Uuid
+  version           Int               @default(1)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  archivedAt        DateTime?
+
+  coverImage MediaAsset?  @relation("SolutionCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  seo        SeoMetadata? @relation(fields: [seoId], references: [id], onDelete: SetNull)
+
+  features  SolutionFeature[]
+  faqs      SolutionFAQ[]
+  documents SolutionDocument[]
+
+  services   Service[]          @relation("ServiceSolutions")
+  products   Product[]          @relation("ProductSolutions")
+  industries Industry[]         @relation("SolutionIndustries")
+  projects   PortfolioProject[] @relation("SolutionProjects")
+
+  @@index([status, publishedAt])
+  @@index([isFeatured])
+  @@index([archivedAt])
+  @@map("solutions")
+}
+
+model SolutionFeature {
+  id          String   @id @default(uuid()) @db.Uuid
+  solutionId  String   @db.Uuid
+  title       String
+  description String?
+  iconName    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  solution Solution @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+
+  @@index([solutionId, sortOrder])
+  @@map("solution_features")
+}
+
+model SolutionFAQ {
+  id         String   @id @default(uuid()) @db.Uuid
+  solutionId String   @db.Uuid
+  question   String
+  answer     String
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  solution Solution @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+
+  @@index([solutionId, sortOrder])
+  @@map("solution_faqs")
+}
+
+model SolutionDocument {
+  id         String   @id @default(uuid()) @db.Uuid
+  solutionId String   @db.Uuid
+  documentId String   @db.Uuid
+  label      String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  solution Solution      @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+  document DocumentAsset @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([solutionId, documentId])
+  @@map("solution_documents")
+}
+
+model Industry {
+  id           String            @id @default(uuid()) @db.Uuid
+  slug         String            @unique
+  name         String
+  summary      String
+  introduction String?
+  challenges   String[]          @default([])
+  capabilities String[]          @default([])
+  iconName     String?
+  coverImageId String?           @db.Uuid
+  ctaHeading   String?
+  ctaLabel     String?
+  ctaHref      String?
+  isFeatured   Boolean           @default(false)
+  sortOrder    Int               @default(0)
+  status       PublicationStatus @default(DRAFT)
+  publishedAt  DateTime?
+  scheduledAt  DateTime?
+  seoId        String?           @unique @db.Uuid
+  version      Int               @default(1)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  archivedAt   DateTime?
+
+  coverImage MediaAsset?  @relation("IndustryCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  seo        SeoMetadata? @relation(fields: [seoId], references: [id], onDelete: SetNull)
+
+  services    Service[]          @relation("ServiceIndustries")
+  solutions   Solution[]         @relation("SolutionIndustries")
+  products    Product[]          @relation("ProductIndustries")
+  projects    PortfolioProject[] @relation("IndustryProjects")
+  caseStudies CaseStudy[]        @relation("IndustryCaseStudies")
+
+  @@index([status, publishedAt])
+  @@index([archivedAt])
+  @@map("industries")
+}
+
+model Product {
+  id               String            @id @default(uuid()) @db.Uuid
+  slug             String            @unique
+  name             String
+  tagline          String?
+  category         String?
+  productStatus    ProductStatus     @default(CONCEPT)
+  summary          String
+  fullDescription  String?
+  problemSolved    String?
+  targetUsers      String[]          @default([])
+  benefits         String[]          @default([])
+  brandPrimary     String?
+  brandSecondary   String?
+  logoId           String?           @db.Uuid
+  coverImageId     String?           @db.Uuid
+  demoVideoUrl     String?
+  websiteUrl       String?
+  demoUrl          String?
+  documentationUrl String?
+  launchLabel      String?
+  launchDate       DateTime?
+  businessModel    String?
+  isFeatured       Boolean           @default(false)
+  sortOrder        Int               @default(0)
+  status           PublicationStatus @default(DRAFT)
+  publishedAt      DateTime?
+  scheduledAt      DateTime?
+  seoId            String?           @unique @db.Uuid
+  version          Int               @default(1)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  archivedAt       DateTime?
+
+  logo       MediaAsset?  @relation("ProductLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  coverImage MediaAsset?  @relation("ProductCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  seo        SeoMetadata? @relation(fields: [seoId], references: [id], onDelete: SetNull)
+
+  features    ProductFeature[]
+  screenshots ProductScreenshot[]
+  faqs        ProductFAQ[]
+
+  services     Service[]          @relation("ServiceProducts")
+  solutions    Solution[]         @relation("ProductSolutions")
+  industries   Industry[]         @relation("ProductIndustries")
+  technologies Technology[]       @relation("ProductTechnologies")
+  caseStudies  CaseStudy[]        @relation("ProductCaseStudies")
+  projects     PortfolioProject[] @relation("ProductProjects")
+  blogPosts    BlogPost[]         @relation("BlogPostProducts")
+
+  @@index([status, publishedAt])
+  @@index([productStatus])
+  @@index([isFeatured])
+  @@index([archivedAt])
+  @@map("products")
+}
+
+model ProductFeature {
+  id          String   @id @default(uuid()) @db.Uuid
+  productId   String   @db.Uuid
+  title       String
+  description String?
+  iconName    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, sortOrder])
+  @@map("product_features")
+}
+
+model ProductScreenshot {
+  id        String   @id @default(uuid()) @db.Uuid
+  productId String   @db.Uuid
+  mediaId   String   @db.Uuid
+  title     String?
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  media   MediaAsset @relation("ProductScreenshotMedia", fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([productId, sortOrder])
+  @@map("product_screenshots")
+}
+
+model ProductFAQ {
+  id        String   @id @default(uuid()) @db.Uuid
+  productId String   @db.Uuid
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, sortOrder])
+  @@map("product_faqs")
+}
+
+// -----------------------------------------------------------------------------
+// Portfolio, case studies and social proof
+// -----------------------------------------------------------------------------
+
+model PortfolioProject {
+  id                  String            @id @default(uuid()) @db.Uuid
+  slug                String            @unique
+  title               String
+  customerDisplayName String?
+  isCustomerConfidential Boolean        @default(false)
+  category            String?
+  projectStatus       ProjectStatus     @default(PLANNED)
+  startDate           DateTime?
+  completionDate      DateTime?
+  summary             String
+  challenge           String?
+  approach            String?
+  solution            String?
+  features            String[]          @default([])
+  deliverables        String[]          @default([])
+  publicUrl           String?
+  demoUrl             String?
+  coverImageId        String?           @db.Uuid
+  isFeatured          Boolean           @default(false)
+  sortOrder           Int               @default(0)
+  status              PublicationStatus @default(DRAFT)
+  publishedAt         DateTime?
+  scheduledAt         DateTime?
+  seoId               String?           @unique @db.Uuid
+  version             Int               @default(1)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  archivedAt          DateTime?
+
+  coverImage MediaAsset?  @relation("PortfolioCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  seo        SeoMetadata? @relation(fields: [seoId], references: [id], onDelete: SetNull)
+
+  featureItems PortfolioFeature[]
+
+  services     Service[]    @relation("ServiceProjects")
+  solutions    Solution[]   @relation("SolutionProjects")
+  products     Product[]    @relation("ProductProjects")
+  industries   Industry[]   @relation("IndustryProjects")
+  technologies Technology[] @relation("ProjectTechnologies")
+  caseStudies  CaseStudy[]
+
+  @@index([status, publishedAt])
+  @@index([projectStatus])
+  @@index([isFeatured])
+  @@index([archivedAt])
+  @@map("portfolio_projects")
+}
+
+model PortfolioFeature {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @db.Uuid
+  title       String
+  description String?
+  iconName    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project PortfolioProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, sortOrder])
+  @@map("portfolio_features")
+}
+
+model CaseStudy {
+  id                  String            @id @default(uuid()) @db.Uuid
+  slug                String            @unique
+  title               String
+  projectId           String?           @db.Uuid
+  approvedCustomerName String?
+  isCustomerApproved  Boolean           @default(false)
+  background          String?
+  challenge           String?
+  discovery           String?
+  strategy            String?
+  design              String?
+  development         String?
+  architecture        String?
+  solution            String?
+  results             String?
+  summary             String
+  coverImageId        String?           @db.Uuid
+  ctaHeading          String?
+  ctaLabel            String?
+  ctaHref             String?
+  isFeatured          Boolean           @default(false)
+  sortOrder           Int               @default(0)
+  status              PublicationStatus @default(DRAFT)
+  publishedAt         DateTime?
+  scheduledAt         DateTime?
+  seoId               String?           @unique @db.Uuid
+  version             Int               @default(1)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  archivedAt          DateTime?
+
+  project    PortfolioProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  coverImage MediaAsset?       @relation("CaseStudyCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  seo        SeoMetadata?      @relation(fields: [seoId], references: [id], onDelete: SetNull)
+
+  metrics       CaseStudyMetric[]
+  downloads     CaseStudyDownload[]
+  testimonialId String?             @db.Uuid
+  testimonial   Testimonial?        @relation(fields: [testimonialId], references: [id], onDelete: SetNull)
+
+  services   Service[]  @relation("ServiceCaseStudies")
+  products   Product[]  @relation("ProductCaseStudies")
+  industries Industry[] @relation("IndustryCaseStudies")
+
+  @@index([status, publishedAt])
+  @@index([isFeatured])
+  @@index([archivedAt])
+  @@map("case_studies")
+}
+
+model CaseStudyMetric {
+  id          String   @id @default(uuid()) @db.Uuid
+  caseStudyId String   @db.Uuid
+  label       String
+  value       String
+  unit        String?
+  description String?
+  isVerified  Boolean  @default(false)
+  sourceNote  String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  caseStudy CaseStudy @relation(fields: [caseStudyId], references: [id], onDelete: Cascade)
+
+  @@index([caseStudyId, sortOrder])
+  @@map("case_study_metrics")
+}
+
+model CaseStudyDownload {
+  id          String   @id @default(uuid()) @db.Uuid
+  caseStudyId String   @db.Uuid
+  documentId  String   @db.Uuid
+  label       String
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  caseStudy CaseStudy     @relation(fields: [caseStudyId], references: [id], onDelete: Cascade)
+  document  DocumentAsset @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([caseStudyId, documentId])
+  @@map("case_study_downloads")
+}
+
+model Testimonial {
+  id               String            @id @default(uuid()) @db.Uuid
+  quote            String
+  authorName       String
+  authorRole       String?
+  organization     String?
+  photoId          String?           @db.Uuid
+  isApproved       Boolean           @default(false)
+  approvalNote     String?
+  isSampleContent  Boolean           @default(false)
+  sortOrder        Int               @default(0)
+  status           PublicationStatus @default(DRAFT)
+  publishedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  archivedAt       DateTime?
+
+  photo MediaAsset? @relation("TestimonialPhoto", fields: [photoId], references: [id], onDelete: SetNull)
+
+  caseStudies CaseStudy[]
+
+  @@index([status, isApproved])
+  @@map("testimonials")
+}
+
+model Client {
+  id               String            @id @default(uuid()) @db.Uuid
+  organization     String
+  slug             String            @unique
+  logoId           String?           @db.Uuid
+  websiteUrl       String?
+  isDisplayApproved Boolean          @default(false)
+  isSampleContent  Boolean           @default(false)
+  sortOrder        Int               @default(0)
+  status           PublicationStatus @default(DRAFT)
+  publishedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  archivedAt       DateTime?
+
+  logo MediaAsset? @relation("ClientLogo", fields: [logoId], references: [id], onDelete: SetNull)
+
+  @@index([status, isDisplayApproved])
+  @@map("clients")
+}
+
+model Partner {
+  id               String            @id @default(uuid()) @db.Uuid
+  organization     String
+  slug             String            @unique
+  logoId           String?           @db.Uuid
+  websiteUrl       String?
+  relationshipNote String?
+  isDisplayApproved Boolean          @default(false)
+  isSampleContent  Boolean           @default(false)
+  sortOrder        Int               @default(0)
+  status           PublicationStatus @default(DRAFT)
+  publishedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  archivedAt       DateTime?
+
+  logo MediaAsset? @relation("PartnerLogo", fields: [logoId], references: [id], onDelete: SetNull)
+
+  @@index([status, isDisplayApproved])
+  @@map("partners")
+}
+
+// -----------------------------------------------------------------------------
+// Company: process, values, milestones, statistics, technology, team
+// -----------------------------------------------------------------------------
+
+model ProcessPhase {
+  id            String   @id @default(uuid()) @db.Uuid
+  slug          String   @unique
+  number        Int
+  name          String
+  shortDescription String
+  detailedDescription String?
+  deliverables  String[] @default([])
+  iconName      String?
+  imageId       String?  @db.Uuid
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  image MediaAsset? @relation("ProcessImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  @@index([sortOrder])
+  @@map("process_phases")
+}
+
+model CompanyValue {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  title       String
+  description String
+  iconName    String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("company_values")
+}
+
+model CompanyMilestone {
+  id          String   @id @default(uuid()) @db.Uuid
+  label       String
+  title       String
+  description String?
+  occurredOn  DateTime?
+  imageId     String?  @db.Uuid
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  image MediaAsset? @relation("MilestoneImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  @@index([sortOrder])
+  @@map("company_milestones")
+}
+
+model Statistic {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  label       String
+  value       String
+  numericValue Float?
+  prefix      String?
+  suffix      String?
+  description String?
+  group       String   @default("home")
+  isVerified  Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([group, sortOrder])
+  @@map("statistics")
+}
+
+model TechnologyCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  name        String
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  technologies Technology[]
+
+  @@map("technology_categories")
+}
+
+model Technology {
+  id              String   @id @default(uuid()) @db.Uuid
+  slug            String   @unique
+  name            String
+  categoryId      String?  @db.Uuid
+  description     String?
+  proficiencyLabel String?
+  logoId          String?  @db.Uuid
+  websiteUrl      String?
+  isFeatured      Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category TechnologyCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  logo     MediaAsset?         @relation("TechnologyLogo", fields: [logoId], references: [id], onDelete: SetNull)
+
+  services Service[]          @relation("ServiceTechnologies")
+  products Product[]          @relation("ProductTechnologies")
+  projects PortfolioProject[] @relation("ProjectTechnologies")
+
+  @@index([categoryId, sortOrder])
+  @@index([isFeatured])
+  @@map("technologies")
+}
+
+model TeamMember {
+  id           String            @id @default(uuid()) @db.Uuid
+  slug         String            @unique
+  displayName  String
+  jobTitle     String
+  biography    String?
+  photoId      String?           @db.Uuid
+  skills       String[]          @default([])
+  linkedinUrl  String?
+  githubUrl    String?
+  publicEmail  String?
+  isFeatured   Boolean           @default(false)
+  sortOrder    Int               @default(0)
+  status       PublicationStatus @default(DRAFT)
+  publishedAt  DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  archivedAt   DateTime?
+
+  photo MediaAsset? @relation("TeamPhoto", fields: [photoId], references: [id], onDelete: SetNull)
+
+  @@index([status, sortOrder])
+  @@map("team_members")
+}
+
+// -----------------------------------------------------------------------------
+// Blog and insights
+// -----------------------------------------------------------------------------
+
+model Author {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  displayName String
+  jobTitle    String?
+  biography   String?
+  avatarId    String?  @db.Uuid
+  linkedinUrl String?
+  githubUrl   String?
+  websiteUrl  String?
+  adminUserId String?  @unique @db.Uuid
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  avatar    MediaAsset? @relation("AuthorAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
+  adminUser AdminUser?  @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+
+  posts BlogPost[]
+
+  @@map("authors")
+}
+
+model BlogCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  name        String
+  description String?
+  accentColor String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  seoId       String?  @unique @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  seo   SeoMetadata? @relation(fields: [seoId], references: [id], onDelete: SetNull)
+  posts BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model BlogTag {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts BlogPostTag[]
+
+  @@map("blog_tags")
+}
+
+model BlogPost {
+  id             String            @id @default(uuid()) @db.Uuid
+  slug           String            @unique
+  title          String
+  excerpt        String
+  contentHtml    String?
+  postType       BlogPostType      @default(ARTICLE)
+  coverImageId   String?           @db.Uuid
+  authorId       String?           @db.Uuid
+  categoryId     String?           @db.Uuid
+  readingMinutes Int               @default(3)
+  isFeatured     Boolean           @default(false)
+  status         PublicationStatus @default(DRAFT)
+  publishedAt    DateTime?
+  scheduledAt    DateTime?
+  contentUpdatedAt DateTime?
+  seoId          String?           @unique @db.Uuid
+  version        Int               @default(1)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  archivedAt     DateTime?
+
+  coverImage MediaAsset?   @relation("BlogCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  author     Author?       @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  category   BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  seo        SeoMetadata?  @relation(fields: [seoId], references: [id], onDelete: SetNull)
+
+  blocks   ContentBlock[]
+  tags     BlogPostTag[]
+  services Service[]      @relation("BlogPostServices")
+  products Product[]      @relation("BlogPostProducts")
+
+  relatedTo   BlogPost[] @relation("RelatedPosts")
+  relatedFrom BlogPost[] @relation("RelatedPosts")
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([isFeatured])
+  @@index([archivedAt])
+  @@map("blog_posts")
+}
+
+model BlogPostTag {
+  postId    String   @db.Uuid
+  tagId     String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  BlogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+  @@map("blog_post_tags")
+}
+
+// -----------------------------------------------------------------------------
+// Careers
+// -----------------------------------------------------------------------------
+
+model Career {
+  id              String         @id @default(uuid()) @db.Uuid
+  slug            String         @unique
+  title           String
+  department      String
+  location        String
+  workplaceType   WorkplaceType  @default(ONSITE)
+  employmentType  EmploymentType @default(FULL_TIME)
+  summary         String
+  responsibilities String[]      @default([])
+  requirements    String[]       @default([])
+  preferredSkills String[]       @default([])
+  applyDeadline   DateTime?
+  careerStatus    CareerStatus   @default(DRAFT)
+  publishedAt     DateTime?
+  seoId           String?        @unique @db.Uuid
+  version         Int            @default(1)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  archivedAt      DateTime?
+
+  seo          SeoMetadata?     @relation(fields: [seoId], references: [id], onDelete: SetNull)
+  applications JobApplication[]
+
+  @@index([careerStatus, publishedAt])
+  @@index([department])
+  @@map("careers")
+}
+
+model JobApplication {
+  id            String            @id @default(uuid()) @db.Uuid
+  careerId      String            @db.Uuid
+  applicantName String
+  email         String
+  mobile        String?
+  portfolioUrl  String?
+  linkedinUrl   String?
+  coverNote     String?
+  cvDocumentId  String?           @db.Uuid
+  consentGiven  Boolean           @default(false)
+  consentText   String?
+  appliedAt     DateTime          @default(now())
+  applicationStatus ApplicationStatus @default(RECEIVED)
+  internalNotes String?
+  sourceIp      String?
+  userAgent     String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  archivedAt    DateTime?
+
+  career Career         @relation(fields: [careerId], references: [id], onDelete: Cascade)
+  cv     DocumentAsset? @relation("ApplicationCv", fields: [cvDocumentId], references: [id], onDelete: SetNull)
+
+  @@index([careerId, applicationStatus])
+  @@index([appliedAt])
+  @@map("job_applications")
+}
+
+// -----------------------------------------------------------------------------
+// Leads, contact and quote requests
+// -----------------------------------------------------------------------------
+
+model Lead {
+  id             String     @id @default(uuid()) @db.Uuid
+  reference      String     @unique
+  type           LeadType   @default(CONTACT)
+  leadStatus     LeadStatus @default(NEW)
+  name           String
+  email          String
+  mobile         String?
+  organization   String?
+  subject        String?
+  message        String?
+  serviceInterest String?
+  assignedToId   String?    @db.Uuid
+  attachmentId   String?    @db.Uuid
+  consentGiven   Boolean    @default(false)
+  consentText    String?
+  sourcePage     String?
+  sourceIp       String?
+  userAgent      String?
+  spamScore      Float      @default(0)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  archivedAt     DateTime?
+
+  assignedTo AdminUser?     @relation("LeadAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  attachment DocumentAsset? @relation("LeadAttachment", fields: [attachmentId], references: [id], onDelete: SetNull)
+
+  notes        LeadNote[]
+  contact      ContactSubmission?
+  quoteRequest QuoteRequest?
+
+  @@index([leadStatus, createdAt])
+  @@index([type])
+  @@index([assignedToId])
+  @@index([email])
+  @@map("leads")
+}
+
+model LeadNote {
+  id        String   @id @default(uuid()) @db.Uuid
+  leadId    String   @db.Uuid
+  authorId  String?  @db.Uuid
+  body      String
+  channel   String?
+  isInternal Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  lead   Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  author AdminUser? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([leadId, createdAt])
+  @@map("lead_notes")
+}
+
+model ContactSubmission {
+  id              String   @id @default(uuid()) @db.Uuid
+  leadId          String   @unique @db.Uuid
+  serviceInterest String?
+  subject         String
+  message         String
+  createdAt       DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@map("contact_submissions")
+}
+
+model QuoteRequest {
+  id                String   @id @default(uuid()) @db.Uuid
+  leadId            String   @unique @db.Uuid
+  projectType       String
+  businessChallenge String
+  requiredFeatures  String[] @default([])
+  existingSystem    String?
+  budgetRange       String?
+  preferredStart    String?
+  timelineNote      String?
+  createdAt         DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@map("quote_requests")
+}
+
+model NewsletterSubscriber {
+  id             String    @id @default(uuid()) @db.Uuid
+  email          String    @unique
+  name           String?
+  isConfirmed    Boolean   @default(false)
+  confirmTokenHash String?
+  confirmedAt    DateTime?
+  unsubscribedAt DateTime?
+  sourcePage     String?
+  sourceIp       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([isConfirmed])
+  @@map("newsletter_subscribers")
+}

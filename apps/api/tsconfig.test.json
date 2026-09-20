@@ -1,0 +1,20 @@
+{
+  /*
+   * Type checking for the test code.
+   *
+   * The main tsconfig has `rootDir: ./src` because that is what `nest build`
+   * emits; tests live outside it and would otherwise never be checked. This
+   * configuration emits nothing and exists purely so `pnpm typecheck` covers
+   * the tests as well as the application.
+   */
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    // Left on, because tsBuildInfoFile is inherited and TypeScript refuses
+    // one without the other; the cache goes next to the build's own.
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo.test"
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

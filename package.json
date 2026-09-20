@@ -1,0 +1,61 @@
+{
+  "name": "key-tech-solutions-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Key Tech Solutions - business portfolio management platform (public website, admin panel, API).",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:api": "pnpm --filter @kts/api dev",
+    "dev:public": "pnpm --filter @kts/public-web dev",
+    "dev:admin": "pnpm --filter @kts/admin-web dev",
+    "build": "pnpm -r --workspace-concurrency=1 build",
+    "build:packages": "pnpm --filter \"./packages/*\" build",
+    "typecheck": "pnpm -r --workspace-concurrency=1 typecheck",
+    "lint": "pnpm -r --workspace-concurrency=1 lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,css,yaml,yml}\"",
+    "test": "pnpm -r --workspace-concurrency=1 test",
+    "test:unit": "pnpm --filter \"./packages/*\" test && pnpm --filter @kts/api test",
+    "test:e2e": "pnpm --filter @kts/public-web test:e2e",
+    "test:integration": "pnpm --filter @kts/api test:integration",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:validate": "prisma validate --schema prisma/schema.prisma",
+    "prisma:format": "prisma format --schema prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --schema prisma/schema.prisma",
+    "prisma:studio": "prisma studio --schema prisma/schema.prisma",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --schema prisma/schema.prisma",
+    "secrets:scan": "node scripts/check-secrets.mjs",
+    "docker:up": "docker compose -f docker-compose.yml up -d",
+    "docker:up:db": "docker compose -f docker-compose.yml up -d postgres",
+    "docker:down": "docker compose -f docker-compose.yml down",
+    "docker:logs": "docker compose -f docker-compose.yml logs -f",
+    "verify": "pnpm secrets:scan && pnpm prisma:validate && pnpm lint && pnpm typecheck && pnpm test"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "eslint": "8.57.0",
+    "prettier": "3.3.3",
+    "prisma": "5.22.0",
+    "tsx": "4.19.2",
+    "typescript": "5.5.4",
+    "@types/bcryptjs": "2.4.6"
+  },
+  "dependencies": {
+    "@prisma/client": "5.22.0",
+    "@kts/shared-types": "workspace:*",
+    "@kts/validation": "workspace:*",
+    "@kts/config": "workspace:*",
+    "bcryptjs": "2.4.3"
+  }
+}

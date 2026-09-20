@@ -1,0 +1,38 @@
+{
+  "name": "@kts/admin-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Key Tech Solutions administration panel (Next.js App Router).",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint --max-warnings 0",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "3.9.1",
+    "@kts/admin-ui": "workspace:*",
+    "@kts/api-client": "workspace:*",
+    "@kts/config": "workspace:*",
+    "@kts/seo": "workspace:*",
+    "@kts/shared-types": "workspace:*",
+    "@kts/validation": "workspace:*",
+    "@tanstack/react-query": "5.62.7",
+    "next": "14.2.18",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-hook-form": "7.53.2",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.18",
+    "typescript": "5.5.4",
+    "vitest": "2.1.8"
+  }
+}

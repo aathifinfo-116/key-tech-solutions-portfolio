@@ -1,0 +1,71 @@
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kt-space-3);
+  margin-top: var(--kt-space-8);
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--kt-touch-target);
+  padding: 0 var(--kt-space-4);
+  border: 1px solid var(--kt-border-default);
+  border-radius: var(--kt-radius-sm);
+  color: var(--kt-text-primary);
+  text-decoration: none;
+  font-size: var(--kt-text-small);
+  font-weight: var(--kt-weight-semibold);
+}
+
+.control:hover {
+  border-color: var(--kt-color-purple);
+  color: var(--kt-color-purple);
+}
+
+.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.page {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--kt-touch-target);
+  min-height: var(--kt-touch-target);
+  padding: 0 8px;
+  border-radius: var(--kt-radius-sm);
+  color: var(--kt-text-secondary);
+  text-decoration: none;
+  font-size: var(--kt-text-small);
+}
+
+.page:hover {
+  background: var(--kt-color-soft-purple);
+  color: var(--kt-color-purple);
+}
+
+/* The current page is bold and filled, not only a different colour. */
+.current,
+.current:hover {
+  background: var(--kt-gradient-brand);
+  color: var(--kt-color-white);
+  font-weight: var(--kt-weight-semibold);
+}
+
+.gap {
+  padding: 0 4px;
+  color: var(--kt-text-secondary);
+}
