@@ -56,6 +56,15 @@ export const apiEnvSchema = z.object({
   SESSION_ABSOLUTE_HOURS: intFromString(24),
   SESSION_COOKIE_SECURE: booleanish.default(false),
   SESSION_COOKIE_DOMAIN: z.string().optional(),
+  /*
+    'lax' is right whenever the API and the panels share a site. They do not
+    when each is a *.vercel.app subdomain: that suffix is on the Public Suffix
+    List, so a browser treats them as separate sites and withholds a lax
+    cookie from every cross-site request - the session then appears to expire
+    the moment it is used. 'none' is the escape hatch for that layout, and the
+    browser only honours it on a Secure cookie.
+  */
+  SESSION_COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('lax'),
 
   PASSWORD_HASH_ROUNDS: intFromString(12),
   LOGIN_MAX_ATTEMPTS: intFromString(5),

@@ -23,6 +23,30 @@ describe('parseEnv', () => {
     expect(env.CORS_ORIGINS).toEqual([]);
   });
 
+  it('defaults the session cookie to SameSite=lax', () => {
+    const env = parseEnv(apiEnvSchema, VALID_BASE as unknown as NodeJS.ProcessEnv);
+    expect(env.SESSION_COOKIE_SAME_SITE).toBe('lax');
+  });
+
+  it('accepts SameSite=none, which a split-domain deployment needs', () => {
+    const env = parseEnv(apiEnvSchema, {
+      ...VALID_BASE,
+      SESSION_COOKIE_SAME_SITE: 'none',
+      SESSION_COOKIE_SECURE: 'true',
+    } as unknown as NodeJS.ProcessEnv);
+    expect(env.SESSION_COOKIE_SAME_SITE).toBe('none');
+    expect(env.SESSION_COOKIE_SECURE).toBe(true);
+  });
+
+  it('rejects a SameSite value browsers do not understand', () => {
+    expect(() =>
+      parseEnv(apiEnvSchema, {
+        ...VALID_BASE,
+        SESSION_COOKIE_SAME_SITE: 'sometimes',
+      } as unknown as NodeJS.ProcessEnv),
+    ).toThrow(EnvironmentValidationError);
+  });
+
   it('parses comma separated CORS origins', () => {
     const env = parseEnv(apiEnvSchema, {
       ...VALID_BASE,

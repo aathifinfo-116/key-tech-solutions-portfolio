@@ -195,11 +195,11 @@ export class SessionService {
   }
 
   setCookie(reply: FastifyReply, token: string, expiresAt: Date): void {
-    const { cookieName, secure, domain } = this.config.session;
+    const { cookieName, secure, domain, sameSite } = this.config.session;
     void reply.setCookie(cookieName, token, {
       httpOnly: true,
       secure,
-      sameSite: 'lax',
+      sameSite,
       path: '/',
       domain,
       expires: expiresAt,
@@ -208,11 +208,11 @@ export class SessionService {
   }
 
   clearCookie(reply: FastifyReply): void {
-    const { cookieName, secure, domain } = this.config.session;
+    const { cookieName, secure, domain, sameSite } = this.config.session;
     void reply.clearCookie(cookieName, {
       httpOnly: true,
       secure,
-      sameSite: 'lax',
+      sameSite,
       path: '/',
       domain,
     });

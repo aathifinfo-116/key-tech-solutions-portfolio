@@ -13,6 +13,19 @@ export class AppConfig {
 
   constructor(source: NodeJS.ProcessEnv = process.env) {
     this.env = parseEnv(apiEnvSchema, source);
+
+    /*
+      A browser discards a SameSite=None cookie that is not also Secure, and
+      says nothing about it. The result looks exactly like a session that
+      expires the instant it is used, which is a miserable thing to debug -
+      so refuse to start instead, naming the two variables at fault.
+    */
+    if (this.env.SESSION_COOKIE_SAME_SITE === 'none' && !this.env.SESSION_COOKIE_SECURE) {
+      throw new Error(
+        'SESSION_COOKIE_SAME_SITE=none requires SESSION_COOKIE_SECURE=true; ' +
+          'browsers silently discard a cookie that is SameSite=None without Secure.',
+      );
+    }
   }
 
   get raw(): ApiEnv {
@@ -61,6 +74,7 @@ export class AppConfig {
       absoluteHours: this.env.SESSION_ABSOLUTE_HOURS,
       secure: this.env.SESSION_COOKIE_SECURE,
       domain: this.env.SESSION_COOKIE_DOMAIN || undefined,
+      sameSite: this.env.SESSION_COOKIE_SAME_SITE,
     };
   }
 
