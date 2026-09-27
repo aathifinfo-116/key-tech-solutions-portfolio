@@ -45,9 +45,9 @@ export const apiEnvSchema = z.object({
   DATABASE_URL: postgresUrl,
   DATABASE_DIRECT_URL: postgresUrl.optional(),
 
-  API_PORT: intFromString(4000),
+  API_PORT: intFromString(4010),
   API_HOST: z.string().default('0.0.0.0'),
-  API_PUBLIC_URL: z.string().url().default('http://localhost:4000'),
+  API_PUBLIC_URL: z.string().url().default('http://localhost:4010'),
   CORS_ORIGINS: csv,
 
   SESSION_SECRET: z.string().min(32, 'must be at least 32 characters'),
@@ -71,7 +71,7 @@ export const apiEnvSchema = z.object({
 
   STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
   STORAGE_LOCAL_ROOT: z.string().default('./uploads'),
-  STORAGE_PUBLIC_BASE_URL: z.string().default('http://localhost:4000/api/v1/media/file'),
+  STORAGE_PUBLIC_BASE_URL: z.string().default('http://localhost:4010/api/v1/media/file'),
   MAX_UPLOAD_IMAGE_MB: intFromString(8),
   MAX_UPLOAD_DOCUMENT_MB: intFromString(15),
 
@@ -90,16 +90,16 @@ export const apiEnvSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
 
-  PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
-  ADMIN_SITE_URL: z.string().url().default('http://localhost:3001'),
+  PUBLIC_SITE_URL: z.string().url().default('http://localhost:3010'),
+  ADMIN_SITE_URL: z.string().url().default('http://localhost:3011'),
 });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;
 
 export const webEnvSchema = z.object({
-  NEXT_PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
+  NEXT_PUBLIC_SITE_URL: z.string().url().default('http://localhost:3010'),
   NEXT_PUBLIC_SITE_NAME: z.string().default('Key Tech Solutions'),
-  NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
+  NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:4010'),
   API_INTERNAL_URL: z.string().url().optional(),
   NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: z.string().optional(),
   NEXT_PUBLIC_ANALYTICS_ID: z.string().optional(),
@@ -110,8 +110,8 @@ export const webEnvSchema = z.object({
 export type WebEnv = z.infer<typeof webEnvSchema>;
 
 export const adminEnvSchema = z.object({
-  NEXT_PUBLIC_ADMIN_URL: z.string().url().default('http://localhost:3001'),
-  NEXT_PUBLIC_ADMIN_API_URL: z.string().url().default('http://localhost:4000'),
+  NEXT_PUBLIC_ADMIN_URL: z.string().url().default('http://localhost:3011'),
+  NEXT_PUBLIC_ADMIN_API_URL: z.string().url().default('http://localhost:4010'),
   ADMIN_INTERNAL_API_URL: z.string().url().optional(),
 });
 

@@ -18,7 +18,7 @@ import {
 } from '@kts/admin-ui';
 import { adminApi, describeError, useSession } from '@/lib/session';
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3010').replace(/\/+$/, '');
 
 /**
  * Sitemap preview.

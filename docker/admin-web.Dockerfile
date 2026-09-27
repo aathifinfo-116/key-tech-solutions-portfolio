@@ -28,9 +28,9 @@ COPY apps/admin-web/package.json             apps/admin-web/
 RUN pnpm install --frozen-lockfile=false
 
 FROM deps AS build
-ARG NEXT_PUBLIC_ADMIN_URL=http://localhost:3001
+ARG NEXT_PUBLIC_ADMIN_URL=http://localhost:3011
 ARG 
-ARG NEXT_PUBLIC_ADMIN_API_URL=http://localhost:4000
+ARG NEXT_PUBLIC_ADMIN_API_URL=http://localhost:4010
 ENV NEXT_PUBLIC_ADMIN_URL=$NEXT_PUBLIC_ADMIN_URL
 
 ENV NEXT_PUBLIC_ADMIN_API_URL=$NEXT_PUBLIC_ADMIN_API_URL
@@ -55,11 +55,11 @@ COPY --from=build --chown=nextjs:nodejs /app/apps/admin-web/.next/static ./apps/
 COPY --from=build --chown=nextjs:nodejs /app/apps/admin-web/public ./apps/admin-web/public
 
 USER nextjs
-EXPOSE 3001
-ENV PORT=3001
+EXPOSE 3011
+ENV PORT=3011
 ENV HOSTNAME=0.0.0.0
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:3011/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 CMD ["node", "apps/admin-web/server.js"]

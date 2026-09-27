@@ -24,7 +24,7 @@ import {
 } from '@kts/admin-ui';
 import { adminApi, describeError, useSession } from '@/lib/session';
 
-const API_BASE = (process.env.NEXT_PUBLIC_ADMIN_API_URL ?? 'http://localhost:4000').replace(
+const API_BASE = (process.env.NEXT_PUBLIC_ADMIN_API_URL ?? 'http://localhost:4010').replace(
   /\/+$/,
   '',
 );

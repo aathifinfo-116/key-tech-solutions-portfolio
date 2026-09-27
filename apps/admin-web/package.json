@@ -4,9 +4,9 @@
   "private": true,
   "description": "Key Tech Solutions administration panel (Next.js App Router).",
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "next dev -p 3011",
     "build": "next build",
-    "start": "next start -p 3001",
+    "start": "next start -p 3011",
     "typecheck": "tsc --noEmit",
     "lint": "next lint --max-warnings 0",
     "test": "vitest run --passWithNoTests"

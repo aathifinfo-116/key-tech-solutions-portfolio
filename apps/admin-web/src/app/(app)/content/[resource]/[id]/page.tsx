@@ -28,7 +28,7 @@ import {
 import { findResource, type FieldDef, type ResourceDef } from '@/lib/resources';
 import { adminApi, describeError, useSession } from '@/lib/session';
 
-const PUBLIC_SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(
+const PUBLIC_SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3010').replace(
   /\/+$/,
   '',
 );

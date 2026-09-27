@@ -8,12 +8,12 @@
  */
 
 /** @type {import('next').NextConfig} */
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4010';
 const apiOrigin = (() => {
   try {
     return new URL(apiUrl).origin;
   } catch {
-    return 'http://localhost:4000';
+    return 'http://localhost:4010';
   }
 })();
 

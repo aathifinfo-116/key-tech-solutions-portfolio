@@ -45,26 +45,26 @@ services:
     environment:
       NODE_ENV: production
       API_HOST: 0.0.0.0
-      API_PORT: 4000
+      API_PORT: 4010
       # Inside the compose network the database host is the service name.
       DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME}?schema=public
       DATABASE_DIRECT_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME}?schema=public
-      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:4000}
-      PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
-      ADMIN_SITE_URL: ${NEXT_PUBLIC_ADMIN_URL:-http://localhost:3001}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:4010}
+      PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3010}
+      ADMIN_SITE_URL: ${NEXT_PUBLIC_ADMIN_URL:-http://localhost:3011}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3010,http://localhost:3011}
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
       PREVIEW_SECRET: ${PREVIEW_SECRET:-}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
       STORAGE_LOCAL_ROOT: /app/uploads
-      STORAGE_PUBLIC_BASE_URL: ${STORAGE_PUBLIC_BASE_URL:-http://localhost:4000/api/v1/media/file}
+      STORAGE_PUBLIC_BASE_URL: ${STORAGE_PUBLIC_BASE_URL:-http://localhost:4010/api/v1/media/file}
       MAIL_DRIVER: ${MAIL_DRIVER:-log}
       MAIL_FROM: ${MAIL_FROM:-Key Tech Solutions <no-reply@example.invalid>}
       MAIL_NOTIFY_TO: ${MAIL_NOTIFY_TO:-}
     ports:
-      - '127.0.0.1:4000:4000'
+      - '127.0.0.1:4010:4010'
     volumes:
       # Uploads live outside the image so a rebuild never discards them.
       - ./uploads:/app/uploads
@@ -74,7 +74,7 @@ services:
           'CMD',
           'node',
           '-e',
-          "fetch('http://127.0.0.1:4000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+          "fetch('http://127.0.0.1:4010/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 15s
       timeout: 5s
@@ -86,9 +86,9 @@ services:
       context: .
       dockerfile: docker/public-web.Dockerfile
       args:
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3010}
         NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-Key Tech Solutions}
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4010}
     container_name: kts-public-web
     restart: unless-stopped
     depends_on:
@@ -96,24 +96,24 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 3010
       HOSTNAME: 0.0.0.0
       # Server-side calls go over the compose network, not the public URL.
-      API_INTERNAL_URL: http://api:4000
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      API_INTERNAL_URL: http://api:4010
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4010}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3010}
       NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-Key Tech Solutions}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
       PREVIEW_SECRET: ${PREVIEW_SECRET:-}
     ports:
-      - '127.0.0.1:3000:3000'
+      - '127.0.0.1:3010:3010'
     healthcheck:
       test:
         [
           'CMD',
           'node',
           '-e',
-          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+          "fetch('http://127.0.0.1:3010/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 15s
       timeout: 5s
@@ -125,8 +125,8 @@ services:
       context: .
       dockerfile: docker/admin-web.Dockerfile
       args:
-        NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL:-http://localhost:3001}
-        NEXT_PUBLIC_ADMIN_API_URL: ${NEXT_PUBLIC_ADMIN_API_URL:-http://localhost:4000}
+        NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL:-http://localhost:3011}
+        NEXT_PUBLIC_ADMIN_API_URL: ${NEXT_PUBLIC_ADMIN_API_URL:-http://localhost:4010}
     container_name: kts-admin-web
     restart: unless-stopped
     depends_on:
@@ -134,20 +134,20 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      PORT: 3001
+      PORT: 3011
       HOSTNAME: 0.0.0.0
-      ADMIN_INTERNAL_API_URL: http://api:4000
-      NEXT_PUBLIC_ADMIN_API_URL: ${NEXT_PUBLIC_ADMIN_API_URL:-http://localhost:4000}
-      NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL:-http://localhost:3001}
+      ADMIN_INTERNAL_API_URL: http://api:4010
+      NEXT_PUBLIC_ADMIN_API_URL: ${NEXT_PUBLIC_ADMIN_API_URL:-http://localhost:4010}
+      NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL:-http://localhost:3011}
     ports:
-      - '127.0.0.1:3001:3001'
+      - '127.0.0.1:3011:3011'
     healthcheck:
       test:
         [
           'CMD',
           'node',
           '-e',
-          "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+          "fetch('http://127.0.0.1:3011/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 15s
       timeout: 5s

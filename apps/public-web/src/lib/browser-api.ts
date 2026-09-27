@@ -8,7 +8,7 @@
 
 import { createPublicApi } from '@kts/api-client';
 
-const BROWSER_API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').replace(
+const BROWSER_API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4010').replace(
   /\/+$/,
   '',
 );

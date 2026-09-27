@@ -26,7 +26,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 const API_BASE = (
   process.env.API_INTERNAL_URL ??
   process.env.NEXT_PUBLIC_API_URL ??
-  'http://localhost:4000'
+  'http://localhost:4010'
 ).replace(/\/+$/, '');
 
 /** Paths the middleware must never touch. */

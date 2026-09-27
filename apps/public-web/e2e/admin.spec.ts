@@ -9,7 +9,7 @@ import { expect, test } from '@playwright/test';
  * so the suite is still useful on a machine that has no admin account.
  */
 
-const ADMIN_URL = process.env.E2E_ADMIN_URL ?? 'http://localhost:3001';
+const ADMIN_URL = process.env.E2E_ADMIN_URL ?? 'http://localhost:3011';
 const EMAIL = process.env.E2E_ADMIN_EMAIL;
 const PASSWORD = process.env.E2E_ADMIN_PASSWORD;
 

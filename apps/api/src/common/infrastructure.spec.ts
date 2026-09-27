@@ -117,7 +117,7 @@ describe('LocalFileStorageProvider', () => {
       new AppConfig({
         ...BASE_ENV,
         STORAGE_LOCAL_ROOT: root,
-        STORAGE_PUBLIC_BASE_URL: 'http://localhost:4000/api/v1/media/file',
+        STORAGE_PUBLIC_BASE_URL: 'http://localhost:4010/api/v1/media/file',
       } as unknown as NodeJS.ProcessEnv),
     );
   });
@@ -153,7 +153,7 @@ describe('LocalFileStorageProvider', () => {
 
   it('builds a public url from the configured base', () => {
     expect(provider.publicUrl(key)).toBe(
-      'http://localhost:4000/api/v1/media/file/products/0f9b5c40-6f5f-4a52-9d1e-1f6c1b2b3c4d.png',
+      'http://localhost:4010/api/v1/media/file/products/0f9b5c40-6f5f-4a52-9d1e-1f6c1b2b3c4d.png',
     );
   });
 

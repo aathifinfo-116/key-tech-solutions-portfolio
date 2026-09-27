@@ -26,9 +26,9 @@ describe('parseEnv', () => {
   it('parses comma separated CORS origins', () => {
     const env = parseEnv(apiEnvSchema, {
       ...VALID_BASE,
-      CORS_ORIGINS: 'http://localhost:3000, http://localhost:3001 ,',
+      CORS_ORIGINS: 'http://localhost:3010, http://localhost:3011 ,',
     } as unknown as NodeJS.ProcessEnv);
-    expect(env.CORS_ORIGINS).toEqual(['http://localhost:3000', 'http://localhost:3001']);
+    expect(env.CORS_ORIGINS).toEqual(['http://localhost:3010', 'http://localhost:3011']);
   });
 
   it('coerces numeric strings', () => {

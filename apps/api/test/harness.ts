@@ -45,10 +45,10 @@ function applyTestEnvironment(): void {
   process.env.SESSION_SECRET ??= randomBytes(32).toString('hex');
   process.env.REVALIDATE_SECRET ??= randomBytes(16).toString('hex');
   process.env.PREVIEW_SECRET ??= randomBytes(16).toString('hex');
-  process.env.PUBLIC_SITE_URL ??= 'http://localhost:3000';
-  process.env.ADMIN_SITE_URL ??= 'http://localhost:3001';
-  process.env.API_PUBLIC_URL ??= 'http://localhost:4000';
-  process.env.CORS_ORIGINS ??= 'http://localhost:3000,http://localhost:3001';
+  process.env.PUBLIC_SITE_URL ??= 'http://localhost:3010';
+  process.env.ADMIN_SITE_URL ??= 'http://localhost:3011';
+  process.env.API_PUBLIC_URL ??= 'http://localhost:4010';
+  process.env.CORS_ORIGINS ??= 'http://localhost:3010,http://localhost:3011';
   process.env.STORAGE_DRIVER ??= 'local';
   process.env.MAIL_DRIVER ??= 'console';
   // Bcrypt at production cost would make every fixture slow; these tests are

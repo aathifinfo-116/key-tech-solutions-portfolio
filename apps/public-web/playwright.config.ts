@@ -7,8 +7,8 @@ import { defineConfig, devices } from '@playwright/test';
  * API, the database and both web apps are separate processes. Start them
  * first (see the README), then:
  *
- *   E2E_BASE_URL=http://localhost:3000 \
- *   E2E_ADMIN_URL=http://localhost:3001 \
+ *   E2E_BASE_URL=http://localhost:3010 \
+ *   E2E_ADMIN_URL=http://localhost:3011 \
  *   pnpm --filter @kts/public-web test:e2e
  *
  * Admin credentials come from E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD. Tests that
@@ -26,7 +26,7 @@ export default defineConfig({
   expect: { timeout: 8_000 },
 
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3010',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'off',

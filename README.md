@@ -233,9 +233,9 @@ pnpm prisma:generate
 pnpm dev
 ```
 
-- Website — <http://localhost:3000>
-- Admin panel — <http://localhost:3001>
-- API — <http://localhost:4000/health>
+- Website — <http://localhost:3010>
+- Admin panel — <http://localhost:3011>
+- API — <http://localhost:4010/health>
 
 Sign in at `/login` with the seed administrator. The account is flagged to
 change its password on first use.
@@ -545,8 +545,8 @@ three projects: desktop Chromium, mobile Chromium (Pixel 5) and a
 reduced-motion project.
 
 ```bash
-E2E_BASE_URL=http://localhost:3000 \
-E2E_ADMIN_URL=http://localhost:3001 \
+E2E_BASE_URL=http://localhost:3010 \
+E2E_ADMIN_URL=http://localhost:3011 \
 E2E_ADMIN_EMAIL=... E2E_ADMIN_PASSWORD=... \
 pnpm test:e2e
 ```

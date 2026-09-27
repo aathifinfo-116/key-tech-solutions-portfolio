@@ -21,7 +21,7 @@ import {
 import { ApiError, createAdminApi } from '@kts/api-client';
 import type { SessionUserDto } from '@kts/shared-types';
 
-const API_BASE = (process.env.NEXT_PUBLIC_ADMIN_API_URL ?? 'http://localhost:4000').replace(
+const API_BASE = (process.env.NEXT_PUBLIC_ADMIN_API_URL ?? 'http://localhost:4010').replace(
   /\/+$/,
   '',
 );

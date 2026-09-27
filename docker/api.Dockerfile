@@ -56,10 +56,10 @@ COPY --from=build --chown=kts:kts /out/package.json ./package.json
 COPY --from=build --chown=kts:kts /app/prisma ./prisma
 
 USER kts
-EXPOSE 4000
+EXPOSE 4010
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.API_PORT||4000)+'/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.API_PORT||4010)+'/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 # Migrations are deliberately NOT run here. Apply them explicitly with
 #   pnpm prisma:migrate:deploy
