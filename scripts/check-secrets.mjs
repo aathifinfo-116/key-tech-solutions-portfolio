@@ -100,9 +100,22 @@ const SECRET_NAME =
 /**
  * Passwords that are obviously stand-ins rather than credentials. A sample
  * connection string in a test or a document needs one of these.
+ *
+ * ALL_CAPS_SNAKE_CASE counts too: that is how every document in the world
+ * writes "put your own value here" (YOUR_PASSWORD, NEON_DB_PASSWORD), and a
+ * real password shaped that way would be too low-entropy to protect
+ * anything. Without this the scanner flags its own deployment guide.
  */
 const PLACEHOLDER_PASSWORD =
   /^(placeholder|changeme|change-me|change_me|example|sample|secret|password|passwd|pass|test|dummy|fake|redacted|xxx+|\*+|\.\.\.|\$\{[^}]*\}|<[^>]*>)$/i;
+
+/**
+ * A bare variable name standing in for a value: YOUR_PASSWORD,
+ * NEON_DB_PASSWORD, DATABASE_PASSWORD. Documents write placeholders this way,
+ * and a real password of that shape would be too low-entropy to protect
+ * anything. Case-sensitive on purpose - lowercase words are covered above.
+ */
+const PLACEHOLDER_VARIABLE_NAME = /^[A-Z][A-Z0-9_]*$/;
 
 const RULES = [
   {
@@ -123,7 +136,8 @@ const RULES = [
       const password = match[1];
       // A variable reference is the correct form, not a leak.
       if (password.startsWith('$') || password.startsWith('%')) return false;
-      if (PLACEHOLDER_PASSWORD.test(password)) return false;
+      if (PLACEHOLDER_PASSWORD.test(password) || PLACEHOLDER_VARIABLE_NAME.test(password))
+        return false;
       // One or two characters is a stand-in, not a password anyone chose.
       return password.length > 2;
     },
@@ -291,7 +305,7 @@ function findHardcodedSecret(line) {
   while ((match = pattern.exec(line)) !== null) {
     const [, name, , value] = match;
     if (!SECRET_NAME.test(name)) continue;
-    if (PLACEHOLDER_PASSWORD.test(value)) continue;
+    if (PLACEHOLDER_PASSWORD.test(value) || PLACEHOLDER_VARIABLE_NAME.test(value)) continue;
     if (looksLikeCredential(value)) return name;
   }
 
@@ -299,7 +313,8 @@ function findHardcodedSecret(line) {
   const env = /^\s*(?:export\s+)?([A-Z][A-Z0-9_]*)\s*=\s*([^\s#]+)\s*$/.exec(line);
   if (env && SECRET_NAME.test(env[1])) {
     const value = env[2].replace(/^(['"])(.*)\1$/, '$2');
-    if (!PLACEHOLDER_PASSWORD.test(value) && looksLikeCredential(value)) return env[1];
+    if (PLACEHOLDER_PASSWORD.test(value) || PLACEHOLDER_VARIABLE_NAME.test(value)) return null;
+    if (looksLikeCredential(value)) return env[1];
   }
 
   return null;
@@ -396,7 +411,7 @@ function scanEnvExample() {
     // A numeric setting such as PASSWORD_HASH_ROUNDS is configuration, and
     // documenting its default is what the example file is for.
     if (/^\d+(?:\.\d+)?$/.test(value)) return;
-    if (PLACEHOLDER_PASSWORD.test(value)) return;
+    if (PLACEHOLDER_PASSWORD.test(value) || PLACEHOLDER_VARIABLE_NAME.test(value)) return;
 
     findings.push({
       file,

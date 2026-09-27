@@ -51,18 +51,33 @@ export default async function handler(
   } catch (error) {
     // A failed build must not poison every later request on this instance.
     readyPromise = null;
+
+    /*
+      Configuration is the overwhelmingly common reason a fresh deployment
+      will not start, and an operator staring at a generic 500 has no way to
+      act on it. `EnvironmentValidationError` is built to name the variables
+      and never their values, so repeating it here tells them exactly what to
+      set without leaking anything.
+
+      Any other failure keeps its detail out of the response - a database
+      error, for instance, would name a host and a port - and offers the
+      error's type as the only clue. The full message always goes to the
+      platform log, which only the account holder can read.
+    */
+    const isEnvironmentError =
+      error instanceof Error && error.name === 'EnvironmentValidationError';
+    const message = isEnvironmentError
+      ? (error as Error).message
+      : `The API failed to start (${error instanceof Error ? error.name : 'unknown error'}). ` +
+        'The cause is in the function log.';
+
     response.statusCode = 500;
     response.setHeader('content-type', 'application/json');
-    // The message names what failed, never a value from the environment.
-    response.end(
-      JSON.stringify({
-        statusCode: 500,
-        error: 'Internal Server Error',
-        message: 'The API failed to start.',
-      }),
-    );
+    response.setHeader('cache-control', 'no-store');
+    response.end(JSON.stringify({ statusCode: 500, error: 'Internal Server Error', message }));
+
     // eslint-disable-next-line no-console
-    console.error(error instanceof Error ? error.message : 'API bootstrap failed.');
+    console.error(error instanceof Error ? error.stack : 'API bootstrap failed.');
     return;
   }
 
