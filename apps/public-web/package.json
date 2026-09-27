@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3010",
     "build": "next build",
+    "vercel-build": "pnpm --filter \"@kts/public-web^...\" build && next build",
     "start": "next start -p 3010",
     "typecheck": "tsc --noEmit",
     "lint": "next lint --max-warnings 0",

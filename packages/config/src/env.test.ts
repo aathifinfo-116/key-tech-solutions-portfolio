@@ -17,7 +17,7 @@ const VALID_BASE = {
 describe('parseEnv', () => {
   it('accepts a minimal valid environment and applies defaults', () => {
     const env = parseEnv(apiEnvSchema, VALID_BASE as unknown as NodeJS.ProcessEnv);
-    expect(env.API_PORT).toBe(4000);
+    expect(env.API_PORT).toBe(4010);
     expect(env.STORAGE_DRIVER).toBe('local');
     expect(env.SESSION_COOKIE_NAME).toBe('kts_admin_session');
     expect(env.CORS_ORIGINS).toEqual([]);

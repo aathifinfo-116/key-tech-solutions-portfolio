@@ -17,19 +17,12 @@
  */
 
 import 'reflect-metadata';
-import { randomBytes, randomUUID } from 'node:crypto';
-import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import cookie from '@fastify/cookie';
-import cors from '@fastify/cors';
-import helmet from '@fastify/helmet';
-import multipart from '@fastify/multipart';
-import rateLimit from '@fastify/rate-limit';
+import { randomBytes } from 'node:crypto';
+import type { INestApplication } from '@nestjs/common';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { AppModule } from '../src/app.module';
-import { AppConfig } from '../src/config/app-config';
+import { createApiApp } from '../src/app.factory';
 
 export const SESSION_COOKIE = 'kts_admin_session';
 
@@ -78,37 +71,14 @@ export interface Harness {
 export async function createHarness(): Promise<Harness> {
   applyTestEnvironment();
 
-  const config = new AppConfig();
+  /*
+    The real application, built by the same factory production uses. The
+    harness deliberately does not assemble its own: a header or a plugin
+    option configured in one place and missing from the other would make
+    these tests prove something the deployed API does not do.
+  */
+  const { app } = await createApiApp();
 
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-
-  const app = moduleRef.createNestApplication<NestFastifyApplication>(
-    new FastifyAdapter({ trustProxy: false, genReqId: () => randomUUID() }),
-    { logger: false },
-  );
-
-  await app.register(cookie, { secret: config.session.secret });
-  await app.register(helmet, {
-    contentSecurityPolicy: {
-      directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"], baseUri: ["'none'"] },
-    },
-    hsts: false,
-  });
-  await app.register(cors, { origin: config.corsOrigins, credentials: true });
-  await app.register(rateLimit, {
-    global: true,
-    max: config.rateLimit.max,
-    timeWindow: config.rateLimit.windowSeconds * 1000,
-    errorResponseBuilder: () => ({
-      statusCode: 429,
-      error: 'Too Many Requests',
-      message: 'Too many requests.',
-    }),
-  });
-  await app.register(multipart, { limits: { fileSize: 5_000_000, files: 1 } });
-
-  // The exception filter is registered by AppModule as an APP_FILTER, so it
-  // is already in place here - the same one production uses.
   await app.init();
   await app.getHttpAdapter().getInstance().ready();
 

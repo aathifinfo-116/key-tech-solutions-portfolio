@@ -61,15 +61,39 @@ export interface SiteChrome {
 }
 
 /**
+ * True while `next build` is prerendering pages.
+ *
+ * Degrading gracefully is right when the site is serving and the API has a
+ * blip: a visitor gets the page, just without a menu. It is wrong during a
+ * build, because the fallback is then written into the static HTML and
+ * shipped - a deploy that looks successful and serves a site with no
+ * navigation and the wrong brand name. Better to fail the build.
+ */
+const IS_BUILD = process.env.NEXT_PHASE === 'phase-production-build';
+
+/**
  * Loads the header, footer and brand in one place.
  *
- * A failure here degrades rather than breaks: the layout still renders with
- * the default brand and no navigation, and the error is logged server side.
+ * At runtime a failure degrades rather than breaks: the layout still renders
+ * with the default brand and no navigation, and the error is logged server
+ * side. During a build the same failure is fatal - see `IS_BUILD`.
  */
 export async function getSiteChrome(): Promise<SiteChrome> {
+  /** Fatal during a build, logged and survivable while serving. */
+  function report(what: string, error: unknown): void {
+    if (IS_BUILD) {
+      throw new Error(
+        `The API was unreachable while building (${what}: ${errorMessage(error)}). ` +
+          'Deploy the API first and check API_INTERNAL_URL, or this build would ship ' +
+          'pages with no navigation and placeholder branding.',
+      );
+    }
+    console.error(`[site] ${what} unavailable:`, errorMessage(error));
+  }
+
   const [settings, navigation, footer] = await Promise.all([
     api.settings().catch((error) => {
-      console.error('[site] settings unavailable:', errorMessage(error));
+      report('settings', error);
       return {
         brand: FALLBACK_BRAND,
         socialLinks: [],
@@ -77,8 +101,14 @@ export async function getSiteChrome(): Promise<SiteChrome> {
         announcement: null,
       } satisfies SiteSettingsDto;
     }),
-    api.navigation('PRIMARY').catch(() => null),
-    api.footer().catch(() => []),
+    api.navigation('PRIMARY').catch((error) => {
+      report('navigation', error);
+      return null;
+    }),
+    api.footer().catch((error) => {
+      report('footer', error);
+      return [];
+    }),
   ]);
 
   return { settings, navigation: navigation?.items ?? [], footer };
