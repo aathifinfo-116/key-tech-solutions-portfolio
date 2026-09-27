@@ -17,11 +17,20 @@ const apiOrigin = (() => {
   }
 })();
 
+/*
+  Next compiles client chunks with eval() in development, so a script-src
+  without 'unsafe-eval' stops every bundle from running: the page renders on
+  the server, nothing hydrates, and anything interactive is dead. The
+  allowance is development-only - a production build needs no eval, and
+  granting it there would undo most of what this header is for.
+*/
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
 const csp = [
   "default-src 'self'",
   // Next.js injects inline bootstrap scripts; 'unsafe-inline' is required for
   // them in the App Router without a per-request nonce middleware.
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${apiOrigin}`,
   "font-src 'self' data:",
@@ -53,9 +62,8 @@ const nextConfig = {
     formats: ['image/webp'],
     // Only the API serves our media; nothing else may be proxied.
     remotePatterns: [
-      { protocol: 'http', hostname: 'localhost', port: '4000', pathname: '/api/v1/media/**' },
       { protocol: 'http', hostname: 'localhost', port: '4010', pathname: '/api/v1/media/**' },
-      { protocol: 'http', hostname: 'api', port: '4000', pathname: '/api/v1/media/**' },
+      { protocol: 'http', hostname: 'api', port: '4010', pathname: '/api/v1/media/**' },
       ...(process.env.NEXT_PUBLIC_MEDIA_HOSTNAME
         ? [{ protocol: 'https', hostname: process.env.NEXT_PUBLIC_MEDIA_HOSTNAME, pathname: '/**' }]
         : []),
