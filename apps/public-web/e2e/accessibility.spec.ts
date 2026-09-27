@@ -80,6 +80,56 @@ test.describe('mobile navigation', () => {
   });
 });
 
+test.describe('the navigation drawer fills the screen', () => {
+  /*
+    `toBeVisible()` is satisfied by any non-zero box, so it passed happily
+    while the drawer was collapsed to the height of the header and every link
+    inside it overflowed out of sight. These assert the geometry instead: the
+    panel is as tall as the window, the list can actually be scrolled to its
+    end, and no entry has been squashed to nothing.
+
+    This runs at phone and tablet widths, because the header keeps the drawer
+    all the way up to 1280px and only the phone was ever exercised before.
+  */
+  for (const [label, width, height] of [
+    ['phone', 390, 844],
+    ['tablet', 768, 1024],
+  ] as const) {
+    test(`at ${label} width every link is reachable`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto('/');
+      await page.getByRole('button', { name: /Menu/i }).click();
+
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible();
+
+      const box = await dialog.boundingBox();
+      // A drawer pinned inside a transformed or filtered ancestor collapses
+      // to that ancestor's height; this is what catches it.
+      expect(box?.height ?? 0, 'the drawer should be as tall as the window').toBeGreaterThan(
+        height * 0.9,
+      );
+
+      const links = dialog.getByRole('link');
+      const count = await links.count();
+      expect(count, 'the drawer should list the navigation').toBeGreaterThan(5);
+
+      for (let index = 0; index < count; index += 1) {
+        const link = links.nth(index);
+        const size = await link.boundingBox();
+        expect(
+          (size?.height ?? 0) > 0 && (size?.width ?? 0) > 0,
+          `link ${index} was rendered with no size`,
+        ).toBe(true);
+      }
+
+      // The last entry must be reachable by scrolling, not merely present.
+      await links.last().scrollIntoViewIfNeeded();
+      await expect(links.last()).toBeInViewport();
+    });
+  }
+});
+
 test.describe('responsive layout', () => {
   const widths = [320, 360, 390, 414, 768, 1024, 1280, 1440];
 
